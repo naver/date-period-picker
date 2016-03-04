@@ -1,0 +1,11 @@
+{
+  "name" : "date-period-picker",
+  "devDependencies" : {
+    "grunt": "*",
+    "grunt-angular-templates": "^0.5.7",
+    "grunt-contrib-coffee": "*",
+    "grunt-contrib-jade": "*",
+    "grunt-contrib-sass": "*",
+    "node-markdown": "^0.1.1"
+  }
+}

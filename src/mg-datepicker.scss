@@ -1,0 +1,117 @@
+.datepicker{
+  .title {
+    position: relative;
+    padding: 11px 0 28px;
+    background: #f7f7f9;
+    border-bottom: 1px solid #ecedf0;
+    text-align: center;
+    font-weight: normal;
+  }
+  .title_label {
+    display: inline-block;
+    position: relative;
+    font-size: 21px;
+    line-height: 25px;
+    font-weight: 300;
+    color: #555;
+    cursor: pointer;
+
+    label {
+      cursor: pointer;
+      font-weight: normal;
+    }
+  }
+  .table {
+    display: table;
+    position: relative;
+    table-layout: fixed;
+    width: 100%;
+    margin: -18px 0 6px;
+  }
+  .header th {
+    padding-bottom: 12px;
+    font-size: 9px;
+    line-height: 12px;
+    font-weight: 400;
+    color: #999;
+    text-align: center;
+  }
+  .body td {
+    text-align: center;
+    vertical-align: top;
+
+    .num {
+      color: #000;
+    }
+    .txt {
+      display: block;
+      font-size: 10px;
+      line-height: 16px;
+      font-weight: 500;
+    }
+    .cell {
+      display: block;
+      min-height: 38px;
+      padding: 3px 0 4px;
+
+      .num {
+        display: block;
+        width: 22px;
+        padding: 3px 0;
+        margin: 0 auto;
+        border-radius: 50%;
+        font-size: 14px;
+        line-height: 16px;
+      }
+      .txt {
+        display: block;
+        font-size: 10px;
+        line-height: 16px;
+        font-weight: 500;
+      }
+    }
+    &.today {
+      .num {
+        background: #f05050;
+        color: #fff;
+      }
+      .txt {
+        color: #f05050;
+      }
+    }
+    &.holiday {
+      .num {
+        color: #f05050;
+      }
+      .txt {
+        color: #f05050;
+      }
+    }
+    &.disabled {
+      color: #bbb;
+
+      .num {
+        color: #bbb;
+      }
+    }
+    &.selected {
+      background: #00c73c;
+
+      .num {
+        color: #fff;
+      }
+      .txt {
+        color: #fff;
+      }
+    }
+    &.between-selected {
+      background: #e0f8e7;
+    }
+    &.saturday .num {
+      color: #379afc;
+    }
+    &.sunday .num {
+      color: #f05050;
+    }
+  }
+}

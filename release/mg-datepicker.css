@@ -1,0 +1,85 @@
+.datepicker .title {
+  position: relative;
+  padding: 11px 0 28px;
+  background: #f7f7f9;
+  border-bottom: 1px solid #ecedf0;
+  text-align: center;
+  font-weight: normal; }
+.datepicker .title_label {
+  display: inline-block;
+  position: relative;
+  font-size: 21px;
+  line-height: 25px;
+  font-weight: 300;
+  color: #555;
+  cursor: pointer; }
+  .datepicker .title_label label {
+    cursor: pointer;
+    font-weight: normal; }
+.datepicker .table {
+  display: table;
+  position: relative;
+  table-layout: fixed;
+  width: 100%;
+  margin: -18px 0 6px; }
+.datepicker .header th {
+  padding-bottom: 12px;
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 400;
+  color: #999;
+  text-align: center; }
+.datepicker .body td {
+  text-align: center;
+  vertical-align: top; }
+  .datepicker .body td .num {
+    color: #000; }
+  .datepicker .body td .txt {
+    display: block;
+    font-size: 10px;
+    line-height: 16px;
+    font-weight: 500; }
+  .datepicker .body td .cell {
+    display: block;
+    min-height: 38px;
+    padding: 3px 0 4px; }
+    .datepicker .body td .cell .num {
+      display: block;
+      width: 22px;
+      padding: 3px 0;
+      margin: 0 auto;
+      border-radius: 50%;
+      font-size: 14px;
+      line-height: 16px; }
+    .datepicker .body td .cell .txt {
+      display: block;
+      font-size: 10px;
+      line-height: 16px;
+      font-weight: 500; }
+  .datepicker .body td.today .num {
+    background: #f05050;
+    color: #fff; }
+  .datepicker .body td.today .txt {
+    color: #f05050; }
+  .datepicker .body td.holiday .num {
+    color: #f05050; }
+  .datepicker .body td.holiday .txt {
+    color: #f05050; }
+  .datepicker .body td.disabled {
+    color: #bbb; }
+    .datepicker .body td.disabled .num {
+      color: #bbb; }
+  .datepicker .body td.selected {
+    background: #00c73c; }
+    .datepicker .body td.selected .num {
+      color: #fff; }
+    .datepicker .body td.selected .txt {
+      color: #fff; }
+  .datepicker .body td.between-selected {
+    background: #e0f8e7; }
+  .datepicker .body td.saturday .num {
+    color: #379afc; }
+  .datepicker .body td.sunday .num {
+    color: #f05050; }
+
+/*# sourceMappingURL=mg-datepicker.css.map */

@@ -1,0 +1,28 @@
+{
+  "name": "date-period-picker",
+  "version": "0.1.7",
+  "homepage": "https://github.com/kccho/date-picker",
+  "authors": [
+    "seunglak<seunglak.choi@navercorp.com>",
+    "kccho <kc.cho@navercorp.com>"
+  ],
+  "description": "Angular directive of Scrollable datepicker.",
+  "main": ["release/date-period-picker.js", "release/date-period-picker-templates.js", "release/datepicker-modal.css", "release/mg-datepicker.css"],
+  "moduleType": [],
+  "keywords": [
+    "date",
+    "picker",
+    "calendar"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-modal-service": "~0.6.9"
+  }
+}

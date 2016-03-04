@@ -1,0 +1,17 @@
+.datepicker
+  .month(ng-repeat="month in ::dates", id="{{month.text}}")
+    table.table(cellspacing='0', cellpadding='0')
+      .title
+        .title_label {{month.text}}
+          thead.header
+            tr
+              th(ng-repeat="week in ::weekdays" ng-class="{{week}}") {{week}}
+      tbody.body
+        tr(ng-repeat="week in ::month.weeks")
+          td(ng-repeat="day in ::week track by $index" ng-class= "calendar.class(day)" ng-click="calendar.isDisabled(day) || calendar.select(day)")
+            .cell(ng-if='::day')
+              .num {{::day | date:'d'}}
+              .txt(ng-show="calendar.isStart(day)") {{::calendar.startDayText() || '입실'}}
+              .txt(ng-show="!calendar.isStart(day) && calendar.isEnd(day)") {{::calendar.endDayText() || '퇴실'}}
+              .txt(ng-show="!calendar.isStart(day) && !calendar.isEnd(day) && calendar.isToday(day)")
+                .today 오늘
