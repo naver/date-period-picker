@@ -52,5 +52,24 @@ HTML and CSS files are fixed, and the options are limited.
 Visible months are based on this selectable days as well.
 <b></b>
 
+## License
+See [LICENSE](LICENSE) for full license text.
+
+```
+Copyright 2016 NAVER Corp.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
 ## Contact
 Please let us know, if you have any questions or suggestions. Also, if you are happy to use this directive, just share us the story so that we can make this component better!
