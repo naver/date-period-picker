@@ -10,6 +10,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
     mgStart: '='
     mgEnd: '='
     mgButtonName: '='
+    mgCallback: '='
     mgSelect: '&'
 
   templateUrl: (tElement, tAttrs) ->
@@ -148,6 +149,8 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         if scope.mgButtonName is 'checkout' and scope.mgStart and scope.mgEnd
           scope.mgEnd = date
           startSelected = false
+          if scope.mgCallback
+            scope.mgCallback('end')
           $timeout (->
             scope.mgSelect()
           ), 300
@@ -156,6 +159,8 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           # startDate is fixed and only end date will be changed
           if scope.mgOptions.mgPenTodaysDeal
             scope.mgEnd = date
+            if scope.mgCallback
+              scope.mgCallback('end')
             $timeout (->
               scope.mgSelect()
             ), 300
@@ -167,14 +172,22 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
                 scope.mgStart = date
                 scope.mgEnd = null
                 startSelected = true
+                if scope.mgCallback
+                  scope.mgCallback('start')
               else
                 scope.mgStart = date
+                if scope.mgCallback
+                  scope.mgCallback('start')
+
                 $timeout (->
                   scope.mgSelect()
                 ), 300
             else
               scope.mgEnd = date
               startSelected = false
+              if scope.mgCallback
+                scope.mgCallback('end')
+
               $timeout (->
                 scope.mgSelect()
               ), 300

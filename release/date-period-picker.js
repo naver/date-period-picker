@@ -2110,7 +2110,7 @@
   app = angular.module('datePeriodPicker');
 
   app.controller('DatepickerModalController', [
-    '$scope', 'close', 'start', 'end', 'buttonName', 'options', function($scope, close, start, end, buttonName, options) {
+    '$scope', 'close', 'start', 'end', 'buttonName', 'callback', 'options', function($scope, close, start, end, buttonName, callback, options) {
       if (start != null) {
         $scope.start = new Date(start.getTime());
       }
@@ -2120,8 +2120,16 @@
       if (buttonName != null) {
         $scope.buttonName = buttonName;
       }
+      if (callback != null) {
+        $scope.callback = callback;
+      }
       $scope.options = options;
-      $scope.close = close;
+      $scope.close = function() {
+        return close({
+          start: $scope.start,
+          end: $scope.end
+        });
+      };
       if (!options.display) {
         return close(null, 200);
       }
@@ -2148,11 +2156,12 @@
               start: start,
               end: end,
               buttonName: null,
+              callback: null,
               options: options
             }
           });
         },
-        showModal: function(start, end, buttonName, options) {
+        showModal: function(start, end, buttonName, callback, options) {
           var deferred;
           options.display = 1;
           deferred = $q.defer();
@@ -2163,6 +2172,7 @@
               start: start,
               end: end,
               buttonName: buttonName,
+              callback: callback,
               options: options
             }
           }).then(function(modal) {
@@ -2176,14 +2186,14 @@
           });
           return deferred.promise;
         },
-        show: function(start, end, options) {
-          return this.showModal(start, end, null, options);
+        show: function(start, end, callback, options) {
+          return this.showModal(start, end, null, callback, options);
         },
         checkin: function(start, end, options) {
-          return this.showModal(start, end, 'checkin', options);
+          return this.showModal(start, end, 'checkin', callback, options);
         },
         checkout: function(start, end, options) {
-          return this.showModal(start, end, 'checkout', options);
+          return this.showModal(start, end, 'checkout', callback, options);
         }
       };
     }
@@ -2207,6 +2217,7 @@
           mgStart: '=',
           mgEnd: '=',
           mgButtonName: '=',
+          mgCallback: '=',
           mgSelect: '&'
         },
         templateUrl: function(tElement, tAttrs) {
@@ -2374,12 +2385,18 @@
                 if (scope.mgButtonName === 'checkout' && scope.mgStart && scope.mgEnd) {
                   scope.mgEnd = date;
                   startSelected = false;
+                  if (scope.mgCallback) {
+                    scope.mgCallback('end');
+                  }
                   return $timeout((function() {
                     return scope.mgSelect();
                   }), 300);
                 } else {
                   if (scope.mgOptions.mgPenTodaysDeal) {
                     scope.mgEnd = date;
+                    if (scope.mgCallback) {
+                      scope.mgCallback('end');
+                    }
                     return $timeout((function() {
                       return scope.mgSelect();
                     }), 300);
@@ -2390,9 +2407,15 @@
                       if (!scope.mgButtonName || !scope.mgEnd || scope.mgEnd <= date || date < startLimit) {
                         scope.mgStart = date;
                         scope.mgEnd = null;
-                        return startSelected = true;
+                        startSelected = true;
+                        if (scope.mgCallback) {
+                          return scope.mgCallback('start');
+                        }
                       } else {
                         scope.mgStart = date;
+                        if (scope.mgCallback) {
+                          scope.mgCallback('start');
+                        }
                         return $timeout((function() {
                           return scope.mgSelect();
                         }), 300);
@@ -2400,6 +2423,9 @@
                     } else {
                       scope.mgEnd = date;
                       startSelected = false;
+                      if (scope.mgCallback) {
+                        scope.mgCallback('end');
+                      }
                       return $timeout((function() {
                         return scope.mgSelect();
                       }), 300);
