@@ -10,21 +10,27 @@ This directive makes it easier to pick a date period without a whole lot of sett
 
 
 ## Usage
+1. include modules, service
+  - include modules: datePeriodPicker, angularModalService
+  ex) in app.js, angular.module('myApp', ['ngCookies', ..., 'datePeriodPicker', 'angularModalService'])
+  - add service: DatepickerModalService
+  ex) in filter.controller.js, angular.module('yourApp').controller('FilterController', function($scope, ..., DatepickerModalService)
 
-1. define options
-2. call DatepickerModalService.show
+2. define options
+
+3. call DatepickerModalService.show
  parameters:
   - startDate: a variable that will be used as startDate
   - endDate: a variable that will be used as endDate
   - callback(eventName): a callback function, which will be called when a date is selected
-    receiving callback will receive eventName such as 'start'(for start date selection), 'end'(for start date selection) 
+    receiving callback will receive eventName such as 'start'(for start date selection), 'end'(for start date selection)
   - datePickerOptions:<br />
     <b>limitNight</b>:  maximum nights that a user can select as a period <br />
     <b>selectableDays</b>: selectable days from today <br />
     (ex: selectableDays:90 means that a user can select any date between today and today + 90 days). <br />
     Visible months are based on this selectable days as well. <br />
     <b></b>
-    
+
 ###html <br>
 ```
 <a href='javascript:;', ng-click="showDatepicker()">Picke a Date!</a>
@@ -34,16 +40,15 @@ This directive makes it easier to pick a date period without a whole lot of sett
 ```javascript
     $scope.startDate = null
     $scope.endDate = null
-    
-    # preload datepicker to make the popup work faster
-    DatepickerModalService.preload($scope.startDate, $scope.endDate, datePickerOptions)
-    
+
     var datePickerOptions = {
         enableKoreanCalendar: true,
         limitNights: 13,
         selectableDays: 90
     }
-  
+    # preload datepicker to make the popup work faster
+    DatepickerModalService.preload($scope.startDate, $scope.endDate, datePickerOptions)
+
     $scope.datepickerCallback = function(eventName) {
         if (eventName === 'start') {
             // start date selected
@@ -51,11 +56,11 @@ This directive makes it easier to pick a date period without a whole lot of sett
             // end date selected
         }
     };
-    
-    
+
+
     $scope.showDatepicker = function() {
       $scope.isBottomHidden = true;
-      return DatepickerModalService.show($scope.startDate, $scope.endDate, null, datePickerOptions).then(function(result) {
+      return DatepickerModalService.show($scope.startDate, $scope.endDate, $scope.datepickerCallback, datePickerOptions).then(function(result) {
         $scope.startDate = result.start;
         return $scope.endDate = result.end;
       }).then(function() {
