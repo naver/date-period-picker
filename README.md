@@ -11,9 +11,9 @@ This directive makes it easier to pick a date period without a whole lot of sett
 
 ## Usage
 1. include modules, service
-  - include modules: datePeriodPicker, angularModalService
+  - include modules: datePeriodPicker, angularModalService  
   ex) in app.js, angular.module('myApp', ['ngCookies', ..., 'datePeriodPicker', 'angularModalService'])
-  - add service: DatepickerModalService
+  - add service: DatepickerModalService  
   ex) in filter.controller.js, angular.module('yourApp').controller('FilterController', function($scope, ..., DatepickerModalService)
 
 2. define options
