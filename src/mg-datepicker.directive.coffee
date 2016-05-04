@@ -88,7 +88,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         scope.dates.push { text: $filter('date')(monthStart, 'yyyy.MM'), weeks: weeksInMonth monthStart }
 
     #if scope.mgOptions.enableKoreanCalendar
-    #  Calendar.load scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl
+      Calendar.load scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl
 
     scope.calendar =
       offsetMargin: (date) ->
