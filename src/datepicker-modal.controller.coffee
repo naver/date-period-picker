@@ -11,4 +11,7 @@ app.controller 'DatepickerModalController', ['$scope', 'close', 'start', 'end', 
     close({start:$scope.start, end:$scope.end})
   if !options.display
     close(null, 200)
+  $scope.$on '$locationChangeStart', (event, next, current) ->
+    if options.display == 1
+      $scope.close()
 ]

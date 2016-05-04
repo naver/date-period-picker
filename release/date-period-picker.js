@@ -2131,8 +2131,13 @@
         });
       };
       if (!options.display) {
-        return close(null, 200);
+        close(null, 200);
       }
+      return $scope.$on('$locationChangeStart', function(event, next, current) {
+        if (options.display === 1) {
+          return $scope.close();
+        }
+      });
     }
   ]);
 
