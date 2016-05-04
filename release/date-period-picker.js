@@ -2299,17 +2299,16 @@
               return weeks;
             };
             activate = function() {
-              var i, len, monthStart, results;
+              var i, len, monthStart;
               scope.dates = [];
-              results = [];
               for (i = 0, len = months.length; i < len; i++) {
                 monthStart = months[i];
-                results.push(scope.dates.push({
+                scope.dates.push({
                   text: $filter('date')(monthStart, 'yyyy.MM'),
                   weeks: weeksInMonth(monthStart)
-                }));
+                });
               }
-              return results;
+              return Calendar.load(scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl);
             };
             scope.calendar = {
               offsetMargin: function(date) {
