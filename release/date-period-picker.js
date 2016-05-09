@@ -2299,17 +2299,21 @@
               return weeks;
             };
             activate = function() {
-              var i, len, monthStart;
+              var i, len, monthStart, results;
               scope.dates = [];
+              results = [];
               for (i = 0, len = months.length; i < len; i++) {
                 monthStart = months[i];
-                scope.dates.push({
+                results.push(scope.dates.push({
                   text: $filter('date')(monthStart, 'yyyy.MM'),
                   weeks: weeksInMonth(monthStart)
-                });
+                }));
               }
-              return Calendar.load(scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl);
+              return results;
             };
+            if (scope.mgOptions.enableKoreanCalendar) {
+              Calendar.load(scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl);
+            }
             scope.calendar = {
               offsetMargin: function(date) {
                 return new Date(date.getFullYear(), date.getMonth()).getDay() * 2.75 + 'rem';
