@@ -94,6 +94,15 @@
         color: #bbb;
       }
     }
+    &.between-selected {
+      background: #e0f8e7;
+    }
+    &.saturday .num {
+      color: #379afc;
+    }
+    &.sunday .num {
+      color: #f05050;
+    }
     &.selected {
       background: #00c73c;
 
@@ -103,15 +112,6 @@
       .txt {
         color: #fff;
       }
-    }
-    &.between-selected {
-      background: #e0f8e7;
-    }
-    &.saturday .num {
-      color: #379afc;
-    }
-    &.sunday .num {
-      color: #f05050;
     }
   }
 }

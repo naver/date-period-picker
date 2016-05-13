@@ -23,7 +23,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       monthElement = angular.element document.getElementById(id)
       element.parent()[0].scrollTop = monthElement[0].offsetTop
       
-  controller: ['$scope', 'ModalService', 'Calendar', (scope, ModalService, Calendar) ->
+  controller: ['$scope', 'ModalService', 'Calendar', '$compile', (scope, ModalService, Calendar, compile) ->
     scope.weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
     startSelected = false
     # init pension options
@@ -84,9 +84,109 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
 
     activate = ->
       scope.dates = []
+      arrayMonths = [];
       for monthStart in months
-        scope.dates.push { text: $filter('date')(monthStart, 'yyyy.MM'), weeks: weeksInMonth monthStart }
+#        scope.dates.push { text: $filter('date')(monthStart, 'yyyy.MM'), weeks: weeksInMonth monthStart }
+        arrayMonths.push {monthText:$filter('date')(monthStart, 'yyyy.MM'), weeks:weeksInMonth(monthStart)}
+      drawCalendar(arrayMonths);
 
+    drawCalendar = (arrayMonths) ->
+      calendarHtml = ''
+      for month in arrayMonths
+        calendarHtml += getMonthHtml month
+      elCustom = document.getElementById 'custom-modal'
+      elCon = elCustom.querySelector '.datepicker'
+      welCon = angular.element elCon
+      elCompile = compile(calendarHtml)(scope)
+      welCon.html ''
+      welCon.append elCompile
+
+    getMonthHtml = (obj) ->
+      weeks = obj.weeks
+      monthText = obj.monthText
+      str = ''
+      str += '<div class="month" id="' + monthText + '">'
+      str += '<div class="title"><div class="title_label">' + monthText + '</div></div>'
+      str += '<table cellspacing="0" cellpadding="0" class="table">'
+      str += '<thead class="header"><tr><th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>'
+      str += '<tbody class="body">'
+      for week in weeks
+        dateArr = week
+        str += '<tr>'
+        for dateObj in dateArr
+          if dateObj == null
+            str += '<td><div class="cell"><div class="num"></div></div></td>'
+          else
+            numClass = scope.calendar.class(dateObj)
+            str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">'
+            str += '<div class="cell">'
+            str += '<div class="num">' + dateObj.getDate() + '</div>'
+            # 오늘
+            if numClass.indexOf('today') > 0
+              str += '<div class="txt txtToday">오늘</div>'
+            # 체크인
+            if scope.calendar.isStart(dateObj)
+              str += '<div class="txt txtCheckIn">' + scope.mgOptions.checkInString + '</div>'
+            # 체크아웃
+            if scope.calendar.isEnd(dateObj)
+              str += '<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>'
+            str += '</div></td>'
+        str += '</tr>';
+      str += '</tbody></table></div>';
+      str
+
+    drawStartDate = (date, nYear, nMonth, nDate) ->
+      td = document.getElementById nYear + '' + nMonth + '' + nDate
+      angular.element(td).addClass 'selected'
+      cell = td.querySelector '.cell'
+      angular.element(cell).append '<div class="txt txtCheckIn">' + scope.mgOptions.checkInString + '</div>'
+
+      elCustom = document.getElementById 'custom-modal'
+      if scope.calendar.isToday(date)                             # 만약 오늘을 클릭한거라면
+        # 글자 제거
+        elTodayStr = elCustom.querySelector '.txtToday'
+        if typeof elTodayStr != 'undefined'
+          angular.element(elTodayStr).remove()
+        # 클래스 제거
+        elToday = elCustom.querySelector '.today'
+        if typeof elToday != 'undefined'
+          angular.element(elToday).removeClass 'today'
+      else                                                        # 오늘을 클릭한게 아니면
+        todayId = $filter('date')(Calendar.getToday(), 'yyyyMd')
+        td = document.getElementById todayId
+        if td.querySelector('.txtToday') == null
+          # 오늘 표시가 없으면 넣는다
+          angular.element(td).addClass 'today'
+          angular.element(td.querySelector('.cell')).append '<div class="txt txtToday">오늘</div>'
+
+    drawEndDate = (date, nYear, nMonth, nDate) ->
+      td = document.getElementById nYear + '' + nMonth + '' + nDate
+      angular.element(td).addClass 'selected'
+      cell = td.querySelector '.cell'
+      angular.element(cell).append '<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>'
+
+    removeCheckInOut = () ->
+      elCustom = document.getElementById 'custom-modal'
+      # 체크인 글자 remove
+      elCheckIn = elCustom.querySelector '.txtCheckIn'
+      if typeof elCheckIn != 'undefined'
+        angular.element(elCheckIn).remove()
+      # 체크아웃 글자 remove
+      elCheckOut = elCustom.querySelector '.txtCheckOut'
+      if typeof elCheckOut != 'undefined'
+        angular.element(elCheckOut).remove()
+      # selected removeClass
+      arrSelect = elCustom.querySelectorAll '.selected'
+      for elSelect in arrSelect
+        angular.element(elSelect).removeClass 'selected'
+      # between-selected removeClass
+      arrBetween = elCustom.querySelectorAll '.between-selected'
+      i = 0
+      for elBetween in arrBetween
+        angular.element(elBetween).removeClass 'between-selected'
+      
+          
+    # 공휴일 로드
     if scope.mgOptions.enableKoreanCalendar
       Calendar.load scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl
 
@@ -108,7 +208,8 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           maxdate = scope.restrictions.maxdate
         (mindate? and currentDate < mindate) or (maxdate? and currentDate > maxdate)
       isToday: (day) ->
-        day.toDateString() == new Date().toDateString()
+        #day.toDateString() == new Date().toDateString()
+        day.toDateString() == Calendar.getToday().toDateString()
       isStart: (day) ->
         scope.mgStart? and scope.mgStart.getTime() is day.getTime()
       isEnd: (day) ->
@@ -126,9 +227,9 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           else if dayObj.getDay() is 6
             classString = 'saturday'
         if scope.mgStart? and scope.mgStart.getTime() is dayObj.getTime()
-          classString = 'selected'
+          classString += ' selected'
         else if scope.mgEnd? and scope.mgEnd.getTime() is dayObj.getTime()
-          classString = 'selected'
+          classString += ' selected'
         else if scope.mgStart? and scope.mgEnd? and !startSelected and dayObj > scope.mgStart and dayObj < scope.mgEnd
           classString = 'between-selected'
         else if scope.mgOptions.today?
@@ -144,7 +245,9 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         if scope.mgOptions.endDateText
           scope.endDateText
 
-      select: (date) ->
+      select: (nYear, nMonth, nDate) ->
+        date = new Date nYear, nMonth-1, nDate
+
         # distinguish between tapping a start button and an end button
         if scope.mgButtonName is 'checkout' and scope.mgStart and scope.mgEnd
           scope.mgEnd = date
@@ -172,6 +275,10 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
                 scope.mgStart = date
                 scope.mgEnd = null
                 startSelected = true
+
+                removeCheckInOut()
+                drawStartDate date, nYear, nMonth, nDate
+
                 if scope.mgCallback
                   scope.mgCallback('start')
               else
@@ -185,12 +292,16 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
             else
               scope.mgEnd = date
               startSelected = false
+
+              drawEndDate date, nYear, nMonth, nDate
+
               if scope.mgCallback
                 scope.mgCallback('end')
 
               $timeout (->
                 scope.mgSelect()
               ), 300
+            
     activate()
   ]
 ]

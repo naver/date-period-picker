@@ -69,17 +69,17 @@
     color: #bbb; }
     .datepicker .body td.disabled .num {
       color: #bbb; }
-  .datepicker .body td.selected {
-    background: #00c73c; }
-    .datepicker .body td.selected .num {
-      color: #fff; }
-    .datepicker .body td.selected .txt {
-      color: #fff; }
   .datepicker .body td.between-selected {
     background: #e0f8e7; }
   .datepicker .body td.saturday .num {
     color: #379afc; }
   .datepicker .body td.sunday .num {
     color: #f05050; }
+  .datepicker .body td.selected {
+    background: #00c73c; }
+    .datepicker .body td.selected .num {
+      color: #fff; }
+    .datepicker .body td.selected .txt {
+      color: #fff; }
 
 /*# sourceMappingURL=mg-datepicker.css.map */
