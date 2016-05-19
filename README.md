@@ -44,7 +44,10 @@ This directive makes it easier to pick a date period without a whole lot of sett
     var datePickerOptions = {
         enableKoreanCalendar: true,
         limitNights: 13,
-        selectableDays: 90
+        selectableDays: 90,
+        // holidayUrl: `${appConfig.apiUrlPrefix}/common/holidays`,
+        checkInString: '입실',
+        checkOutString: '퇴실'
     }
     # preload datepicker to make the popup work faster
     DatepickerModalService.preload($scope.startDate, $scope.endDate, datePickerOptions)
