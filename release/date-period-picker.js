@@ -2249,7 +2249,7 @@
         },
         controller: [
           '$scope', 'ModalService', 'Calendar', '$compile', function(scope, ModalService, Calendar, compile) {
-            var activate, date, drawCalendar, drawEndDate, drawStartDate, getMonthHtml, months, nEnabledTimeLength, ref, ref1, ref2, removeCheckInOut, startSelected, weeksInMonth;
+            var activate, date, drawCalendar, drawEndDate, drawStartDate, getMonthHtml, months, nEnabledTimeLength, ref, ref1, ref2, removeCheckInOut, removeCheckOut, startSelected, weeksInMonth;
             scope.weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             startSelected = false;
             if (scope.mgOptions.mgPenTodaysDeal || (scope.mgStart && scope.mgButtonName === 'checkout')) {
@@ -2284,14 +2284,14 @@
               date.setMonth(date.getMonth() + 1);
             }
             weeksInMonth = function(month) {
-              var day, each, j, newDay, ref3, week, weeks;
+              var day, each, i, newDay, ref3, week, weeks;
               weeks = [];
               day = new Date(month);
               while (day.getMonth() === month.getMonth()) {
                 newDay = new Date(day);
                 if (!week) {
                   week = [];
-                  for (each = j = 1, ref3 = day.getDay(); j <= ref3; each = j += 1) {
+                  for (each = i = 1, ref3 = day.getDay(); i <= ref3; each = i += 1) {
                     week.push(null);
                   }
                 }
@@ -2307,11 +2307,11 @@
               return weeks;
             };
             activate = function() {
-              var arrayMonths, j, len, monthStart;
+              var arrayMonths, i, len, monthStart;
               scope.dates = [];
               arrayMonths = [];
-              for (j = 0, len = months.length; j < len; j++) {
-                monthStart = months[j];
+              for (i = 0, len = months.length; i < len; i++) {
+                monthStart = months[i];
                 arrayMonths.push({
                   monthText: $filter('date')(monthStart, 'yyyy.MM'),
                   weeks: weeksInMonth(monthStart)
@@ -2320,10 +2320,10 @@
               return drawCalendar(arrayMonths);
             };
             drawCalendar = function(arrayMonths) {
-              var calendarHtml, elCompile, elCon, elCustom, j, len, month, welCon;
+              var calendarHtml, elCompile, elCon, elCustom, i, len, month, welCon;
               calendarHtml = '';
-              for (j = 0, len = arrayMonths.length; j < len; j++) {
-                month = arrayMonths[j];
+              for (i = 0, len = arrayMonths.length; i < len; i++) {
+                month = arrayMonths[i];
                 calendarHtml += getMonthHtml(month);
               }
               elCustom = document.getElementById('custom-modal');
@@ -2334,7 +2334,7 @@
               return welCon.append(elCompile);
             };
             getMonthHtml = function(obj) {
-              var dateArr, dateObj, j, k, len, len1, monthText, numClass, str, week, weeks;
+              var dateArr, dateObj, i, j, len, len1, monthText, numClass, str, week, weeks;
               weeks = obj.weeks;
               monthText = obj.monthText;
               str = '';
@@ -2343,12 +2343,12 @@
               str += '<table cellspacing="0" cellpadding="0" class="table">';
               str += '<thead class="header"><tr><th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>';
               str += '<tbody class="body">';
-              for (j = 0, len = weeks.length; j < len; j++) {
-                week = weeks[j];
+              for (i = 0, len = weeks.length; i < len; i++) {
+                week = weeks[i];
                 dateArr = week;
                 str += '<tr>';
-                for (k = 0, len1 = dateArr.length; k < len1; k++) {
-                  dateObj = dateArr[k];
+                for (j = 0, len1 = dateArr.length; j < len1; j++) {
+                  dateObj = dateArr[j];
                   if (dateObj === null) {
                     str += '<td><div class="cell"><div class="num"></div></div></td>';
                   } else {
@@ -2405,8 +2405,28 @@
               cell = td.querySelector('.cell');
               return angular.element(cell).append('<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>');
             };
+            removeCheckOut = function() {
+              var arrBetween, arrSelect, checkoutSelected, elBetween, elCheckOut, elCustom, i, len, results;
+              elCustom = document.getElementById('custom-modal');
+              elCheckOut = elCustom.querySelector('.txtCheckOut');
+              if (typeof elCheckOut !== 'undefined') {
+                angular.element(elCheckOut).remove();
+              }
+              arrSelect = elCustom.querySelectorAll('.selected');
+              if (0 < arrSelect.length) {
+                checkoutSelected = arrSelect[arrSelect.length - 1];
+                angular.element(checkoutSelected).removeClass('selected');
+              }
+              arrBetween = elCustom.querySelectorAll('.between-selected');
+              results = [];
+              for (i = 0, len = arrBetween.length; i < len; i++) {
+                elBetween = arrBetween[i];
+                results.push(angular.element(elBetween).removeClass('between-selected'));
+              }
+              return results;
+            };
             removeCheckInOut = function() {
-              var arrBetween, arrSelect, elBetween, elCheckIn, elCheckOut, elCustom, elSelect, i, j, k, len, len1, results;
+              var arrBetween, arrSelect, elBetween, elCheckIn, elCheckOut, elCustom, elSelect, i, j, len, len1, results;
               elCustom = document.getElementById('custom-modal');
               elCheckIn = elCustom.querySelector('.txtCheckIn');
               if (typeof elCheckIn !== 'undefined') {
@@ -2417,15 +2437,14 @@
                 angular.element(elCheckOut).remove();
               }
               arrSelect = elCustom.querySelectorAll('.selected');
-              for (j = 0, len = arrSelect.length; j < len; j++) {
-                elSelect = arrSelect[j];
+              for (i = 0, len = arrSelect.length; i < len; i++) {
+                elSelect = arrSelect[i];
                 angular.element(elSelect).removeClass('selected');
               }
               arrBetween = elCustom.querySelectorAll('.between-selected');
-              i = 0;
               results = [];
-              for (k = 0, len1 = arrBetween.length; k < len1; k++) {
-                elBetween = arrBetween[k];
+              for (j = 0, len1 = arrBetween.length; j < len1; j++) {
+                elBetween = arrBetween[j];
                 results.push(angular.element(elBetween).removeClass('between-selected'));
               }
               return results;
@@ -2513,6 +2532,8 @@
                 if (scope.mgButtonName === 'checkout' && scope.mgStart && scope.mgEnd) {
                   scope.mgEnd = date;
                   startSelected = false;
+                  removeCheckOut();
+                  drawEndDate(date, nYear, nMonth, nDate);
                   if (scope.mgCallback) {
                     scope.mgCallback('end');
                   }
@@ -2522,6 +2543,8 @@
                 } else {
                   if (scope.mgOptions.mgPenTodaysDeal) {
                     scope.mgEnd = date;
+                    removeCheckOut();
+                    drawEndDate(date, nYear, nMonth, nDate);
                     if (scope.mgCallback) {
                       scope.mgCallback('end');
                     }
