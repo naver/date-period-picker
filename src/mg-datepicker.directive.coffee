@@ -22,7 +22,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       id = $filter('date')(scope.mgStart, 'yyyy.MM')
       monthElement = angular.element document.getElementById(id)
       element.parent()[0].scrollTop = monthElement[0].offsetTop
-      
+
   controller: ['$scope', 'ModalService', 'Calendar', '$compile', (scope, ModalService, Calendar, compile) ->
     scope.weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
     startSelected = false
@@ -165,6 +165,22 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       cell = td.querySelector '.cell'
       angular.element(cell).append '<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>'
 
+    removeCheckOut = ->
+      elCustom = document.getElementById 'custom-modal'
+      # 체크아웃 글자 remove
+      elCheckOut = elCustom.querySelector '.txtCheckOut'
+      if typeof elCheckOut != 'undefined'
+        angular.element(elCheckOut).remove()
+      # selected removeClass
+      arrSelect = elCustom.querySelectorAll '.selected'
+      if 0 < arrSelect.length
+        checkoutSelected = arrSelect[arrSelect.length - 1]
+        angular.element(checkoutSelected).removeClass 'selected'
+      # between-selected removeClass
+      arrBetween = elCustom.querySelectorAll '.between-selected'
+      for elBetween in arrBetween
+        angular.element(elBetween).removeClass 'between-selected'
+
     removeCheckInOut = () ->
       elCustom = document.getElementById 'custom-modal'
       # 체크인 글자 remove
@@ -181,11 +197,10 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         angular.element(elSelect).removeClass 'selected'
       # between-selected removeClass
       arrBetween = elCustom.querySelectorAll '.between-selected'
-      i = 0
       for elBetween in arrBetween
         angular.element(elBetween).removeClass 'between-selected'
-      
-          
+
+
     # 공휴일 로드
     if scope.mgOptions.enableKoreanCalendar
       Calendar.load scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl
@@ -252,6 +267,8 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         if scope.mgButtonName is 'checkout' and scope.mgStart and scope.mgEnd
           scope.mgEnd = date
           startSelected = false
+          removeCheckOut()
+          drawEndDate date, nYear, nMonth, nDate
           if scope.mgCallback
             scope.mgCallback('end')
           $timeout (->
@@ -262,6 +279,8 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           # startDate is fixed and only end date will be changed
           if scope.mgOptions.mgPenTodaysDeal
             scope.mgEnd = date
+            removeCheckOut()
+            drawEndDate date, nYear, nMonth, nDate
             if scope.mgCallback
               scope.mgCallback('end')
             $timeout (->
@@ -301,7 +320,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
               $timeout (->
                 scope.mgSelect()
               ), 300
-            
+
     activate()
   ]
 ]
