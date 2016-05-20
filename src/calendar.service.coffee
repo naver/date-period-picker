@@ -17,7 +17,7 @@ app.service 'Calendar', ['$http', '$filter', ($http, $filter) ->
           endDate: $filter('date') maxdate, 'yyyy-MM-dd'
         }
       ).then (o) ->
-        if o.data? && o.data.today? then o.data.today = new Date(o.data.today) else o.data.today = null     # string 을 date 객체로 변환
+        if o.data? && o.data.today? then o.data.today = new Date(o.data.today) else o.data.today = new Date() # string 을 date 객체로 변환
         holidays = o.data
 
     else # use the default korean holiday data (2016-03-01 ~ 2026-02-29). It was generated on 2016-02-29
