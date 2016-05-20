@@ -31,7 +31,7 @@
               if ((o.data != null) && (o.data.today != null)) {
                 o.data.today = new Date(o.data.today);
               } else {
-                o.data.today = null;
+                o.data.today = new Date();
               }
               return holidays = o.data;
             });
