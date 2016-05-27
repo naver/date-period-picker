@@ -308,7 +308,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           if scope.mgOptions.mgPenTodaysDeal
             scope.mgEnd = date
             removeCheckOut()
-            drawEndDate date, nYear, nMonth, nDate
+            drawCheckInCheckOut()
             if scope.mgCallback
               scope.mgCallback('end')
             $timeout (->
