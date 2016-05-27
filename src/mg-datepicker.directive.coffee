@@ -136,6 +136,10 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       str
 
     drawCheckInCheckOut = ->
+      if scope.mgOptions.limitNights != null    # limitNights 가 설정되어 있으면 전체 다시 그리기로 한다.
+        activate()
+        return
+
       if scope.mgStart != null
         drawStartDate scope.mgStart, scope.mgStart.getFullYear(), scope.mgStart.getMonth() + 1, scope.mgStart.getDate()
       if scope.mgEnd != null
@@ -319,8 +323,17 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
             startLimit.setDate startLimit.getDate() - scope.mgOptions.limitNights
             if !startSelected or (startSelected and date <= scope.mgStart)
               if !scope.mgButtonName or !scope.mgEnd or scope.mgEnd <= date or date < startLimit
-
                 if scope.mgButtonName == 'checkin' && scope.mgStart != null && scope.mgEnd != null && date < scope.mgEnd
+                  diffDate = (scope.mgEnd.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)   # 숙박 기간
+                  if scope.mgOptions.limitNights && diffDate > scope.mgOptions.limitNights      # 숙박 기간이 limitNights 보다 크면 체크인 설정
+                    scope.mgStart = date
+                    scope.mgEnd = null
+                    startSelected = true
+                    removeCheckInOut()
+                    drawCheckInCheckOut()
+                    if scope.mgCallback
+                      return scope.mgCallback('start')
+
                   scope.mgStart = date
                   startSelected = true
                   removeCheckInOut()

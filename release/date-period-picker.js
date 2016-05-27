@@ -2376,6 +2376,10 @@
             };
             drawCheckInCheckOut = function() {
               var beDate, elTd;
+              if (scope.mgOptions.limitNights !== null) {
+                activate();
+                return;
+              }
               if (scope.mgStart !== null) {
                 drawStartDate(scope.mgStart, scope.mgStart.getFullYear(), scope.mgStart.getMonth() + 1, scope.mgStart.getDate());
               }
@@ -2541,7 +2545,7 @@
                 }
               },
               select: function(nYear, nMonth, nDate) {
-                var startLimit;
+                var diffDate, startLimit;
                 date = new Date(nYear, nMonth - 1, nDate);
                 if (Calendar.getToday() > date) {
                   return;
@@ -2585,6 +2589,17 @@
                     if (!startSelected || (startSelected && date <= scope.mgStart)) {
                       if (!scope.mgButtonName || !scope.mgEnd || scope.mgEnd <= date || date < startLimit) {
                         if (scope.mgButtonName === 'checkin' && scope.mgStart !== null && scope.mgEnd !== null && date < scope.mgEnd) {
+                          diffDate = (scope.mgEnd.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+                          if (scope.mgOptions.limitNights && diffDate > scope.mgOptions.limitNights) {
+                            scope.mgStart = date;
+                            scope.mgEnd = null;
+                            startSelected = true;
+                            removeCheckInOut();
+                            drawCheckInCheckOut();
+                            if (scope.mgCallback) {
+                              return scope.mgCallback('start');
+                            }
+                          }
                           scope.mgStart = date;
                           startSelected = true;
                           removeCheckInOut();
