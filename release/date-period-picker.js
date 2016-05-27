@@ -2375,7 +2375,7 @@
               return str;
             };
             drawCheckInCheckOut = function() {
-              var beDate, elTd, results;
+              var beDate, elTd;
               if (scope.mgStart !== null) {
                 drawStartDate(scope.mgStart, scope.mgStart.getFullYear(), scope.mgStart.getMonth() + 1, scope.mgStart.getDate());
               }
@@ -2385,13 +2385,11 @@
               if (scope.mgStart !== null && scope.mgEnd !== null) {
                 beDate = new Date(scope.mgStart.getFullYear(), scope.mgStart.getMonth(), scope.mgStart.getDate());
                 beDate.setDate(beDate.getDate() + 1);
-                results = [];
                 while (beDate < scope.mgEnd) {
                   elTd = document.getElementById($filter('date')(beDate, 'yyyyMd'));
                   angular.element(elTd).addClass('between-selected');
-                  results.push(beDate.setDate(beDate.getDate() + 1));
+                  beDate.setDate(beDate.getDate() + 1);
                 }
-                return results;
               }
             };
             drawStartDate = function(date, nYear, nMonth, nDate) {

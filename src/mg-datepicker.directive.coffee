@@ -147,6 +147,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           elTd = document.getElementById($filter('date')(beDate, 'yyyyMd'))
           angular.element(elTd).addClass 'between-selected'
           beDate.setDate beDate.getDate() + 1
+        return
 
     drawStartDate = (date, nYear, nMonth, nDate) ->
       td = document.getElementById nYear + '' + nMonth + '' + nDate
