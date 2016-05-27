@@ -2354,7 +2354,7 @@
                     str += '<td><div class="cell"><div class="num"></div></div></td>';
                   } else {
                     numClass = scope.calendar["class"](dateObj);
-                    str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">';
+                    str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + (numClass === "disabled" ? "\'disabled\'" : "\'\'") + ',' + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">';
                     str += '<div class="cell">';
                     str += '<div class="num">' + dateObj.getDate() + '</div>';
                     if (numClass.indexOf('today') > 0) {
@@ -2544,10 +2544,10 @@
                   return scope.endDateText;
                 }
               },
-              select: function(nYear, nMonth, nDate) {
+              select: function(isDisabled, nYear, nMonth, nDate) {
                 var diffDate, startLimit;
                 date = new Date(nYear, nMonth - 1, nDate);
-                if (Calendar.getToday() > date) {
+                if (isDisabled === 'disabled') {
                   return;
                 }
                 if (scope.mgButtonName === 'checkout' && scope.mgStart && scope.mgEnd) {

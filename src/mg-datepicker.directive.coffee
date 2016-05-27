@@ -118,7 +118,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
             str += '<td><div class="cell"><div class="num"></div></div></td>'
           else
             numClass = scope.calendar.class(dateObj)
-            str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">'
+            str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + (if (numClass=="disabled") then "\'disabled\'" else "\'\'") + ','  + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">'
             str += '<div class="cell">'
             str += '<div class="num">' + dateObj.getDate() + '</div>'
             # 오늘
@@ -280,9 +280,9 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         if scope.mgOptions.endDateText
           scope.endDateText
 
-      select: (nYear, nMonth, nDate) ->
+      select: (isDisabled, nYear, nMonth, nDate) ->
         date = new Date nYear, nMonth-1, nDate
-        if Calendar.getToday() > date         # 오늘 날짜 이전 선택이면 return
+        if isDisabled == 'disabled'         # 비활성이면 return
           return
 
         # distinguish between tapping a start button and an end button
