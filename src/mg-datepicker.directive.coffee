@@ -135,6 +135,19 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       str += '</tbody></table></div>';
       str
 
+    drawCheckInCheckOut = ->
+      if scope.mgStart != null
+        drawStartDate scope.mgStart, scope.mgStart.getFullYear(), scope.mgStart.getMonth() + 1, scope.mgStart.getDate()
+      if scope.mgEnd != null
+        drawEndDate scope.mgEnd, scope.mgEnd.getFullYear(), scope.mgEnd.getMonth() + 1, scope.mgEnd.getDate()
+      if scope.mgStart != null and scope.mgEnd != null
+        beDate = new Date(scope.mgStart.getFullYear(), scope.mgStart.getMonth(), scope.mgStart.getDate())
+        beDate.setDate beDate.getDate() + 1
+        while beDate < scope.mgEnd
+          elTd = document.getElementById($filter('date')(beDate, 'yyyyMd'))
+          angular.element(elTd).addClass 'between-selected'
+          beDate.setDate beDate.getDate() + 1
+
     drawStartDate = (date, nYear, nMonth, nDate) ->
       td = document.getElementById nYear + '' + nMonth + '' + nDate
       angular.element(td).addClass 'selected'
@@ -211,11 +224,12 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       isVisible: (date, day) ->
         new Date(date.getFullYear(), date.getMonth(), day).getMonth() is date.getMonth()
       isDisabled: (currentDate) ->
-        if scope.mgStart and scope.mgEnd and scope.mgButtonName is 'checkout'
-          mindate = new Date scope.mgStart
-          mindate.setDate mindate.getDate() + 1
-        else
-          mindate = scope.restrictions.mindate
+#        if scope.mgStart and scope.mgEnd and scope.mgButtonName is 'checkout'
+#          mindate = new Date scope.mgStart
+#          mindate.setDate mindate.getDate() + 1
+#        else
+#          mindate = scope.restrictions.mindate
+        mindate = scope.restrictions.mindate
         if scope.mgOptions.limitNights? and startSelected
           maxdate = new Date scope.mgStart.getFullYear(), scope.mgStart.getMonth(), scope.mgStart.getDate() + scope.mgOptions.limitNights
           if maxdate > scope.restrictions.maxdate then maxdate = scope.restrictions.maxdate
@@ -245,7 +259,8 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           classString += ' selected'
         else if scope.mgEnd? and scope.mgEnd.getTime() is dayObj.getTime()
           classString += ' selected'
-        else if scope.mgStart? and scope.mgEnd? and !startSelected and dayObj > scope.mgStart and dayObj < scope.mgEnd
+        #else if scope.mgStart? and scope.mgEnd? and !startSelected and dayObj > scope.mgStart and dayObj < scope.mgEnd
+        else if scope.mgStart? and scope.mgEnd? and dayObj > scope.mgStart and dayObj < scope.mgEnd
           classString = 'between-selected'
         else if scope.mgOptions.today?
           if dayObj.getTime() is scope.mgOptions.today.setHours(0, 0, 0, 0)
@@ -262,13 +277,25 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
 
       select: (nYear, nMonth, nDate) ->
         date = new Date nYear, nMonth-1, nDate
+        if Calendar.getToday() > date         # 오늘 날짜 이전 선택이면 return
+          return
 
         # distinguish between tapping a start button and an end button
         if scope.mgButtonName is 'checkout' and scope.mgStart and scope.mgEnd
+          if date <= scope.mgStart #체크인 이전을 클릭시엔 체크인을 선택
+            scope.mgStart = date
+            scope.mgEnd = null
+            startSelected = true
+            removeCheckInOut()
+            drawCheckInCheckOut()
+            if scope.mgCallback
+              scope.mgCallback('start')
+            return
+
           scope.mgEnd = date
           startSelected = false
-          removeCheckOut()
-          drawEndDate date, nYear, nMonth, nDate
+          removeCheckInOut()
+          drawCheckInCheckOut()
           if scope.mgCallback
             scope.mgCallback('end')
           $timeout (->
@@ -291,32 +318,44 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
             startLimit.setDate startLimit.getDate() - scope.mgOptions.limitNights
             if !startSelected or (startSelected and date <= scope.mgStart)
               if !scope.mgButtonName or !scope.mgEnd or scope.mgEnd <= date or date < startLimit
+
+                if scope.mgButtonName == 'checkin' && scope.mgStart != null && scope.mgEnd != null && date < scope.mgEnd
+                  scope.mgStart = date
+                  startSelected = true
+                  removeCheckInOut()
+                  drawCheckInCheckOut()
+                  if scope.mgCallback
+                    scope.mgCallback('start')
+                  return $timeout (->
+                    scope.mgSelect()
+                  ), 300
+
                 scope.mgStart = date
                 scope.mgEnd = null
                 startSelected = true
-
                 removeCheckInOut()
                 drawStartDate date, nYear, nMonth, nDate
-
                 if scope.mgCallback
                   scope.mgCallback('start')
-              else
+
+              else                            # 체크인/체크아웃 모두 있고, 체크인 버튼을 눌러서 들어오고, 체크아웃 이전으로 선택하면 실행
                 scope.mgStart = date
+                removeCheckInOut()
+                drawCheckInCheckOut()
                 if scope.mgCallback
                   scope.mgCallback('start')
 
                 $timeout (->
                   scope.mgSelect()
                 ), 300
+
             else
               scope.mgEnd = date
               startSelected = false
-
-              drawEndDate date, nYear, nMonth, nDate
-
+              removeCheckInOut()
+              drawCheckInCheckOut()
               if scope.mgCallback
                 scope.mgCallback('end')
-
               $timeout (->
                 scope.mgSelect()
               ), 300
