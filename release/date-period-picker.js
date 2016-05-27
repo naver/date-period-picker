@@ -2600,7 +2600,7 @@
                         scope.mgEnd = null;
                         startSelected = true;
                         removeCheckInOut();
-                        drawStartDate(date, nYear, nMonth, nDate);
+                        drawCheckInCheckOut();
                         if (scope.mgCallback) {
                           return scope.mgCallback('start');
                         }

@@ -335,7 +335,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
                 scope.mgEnd = null
                 startSelected = true
                 removeCheckInOut()
-                drawStartDate date, nYear, nMonth, nDate
+                drawCheckInCheckOut()
                 if scope.mgCallback
                   scope.mgCallback('start')
 
