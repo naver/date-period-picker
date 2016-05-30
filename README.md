@@ -49,8 +49,6 @@ This directive makes it easier to pick a date period without a whole lot of sett
         checkInString: '입실',
         checkOutString: '퇴실'
     }
-    # preload datepicker to make the popup work faster
-    DatepickerModalService.preload($scope.startDate, $scope.endDate, datePickerOptions)
 
     $scope.datepickerCallback = function(eventName) {
         if (eventName === 'start') {
