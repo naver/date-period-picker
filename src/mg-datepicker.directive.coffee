@@ -24,6 +24,12 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       element.parent()[0].scrollTop = monthElement[0].offsetTop
 
   controller: ['$scope', 'ModalService', 'Calendar', '$compile', (scope, ModalService, Calendar, compile) ->
+    # set default value
+    if not scope.mgOptions.checkInString
+      scope.mgOptions.checkInString = 'check in'
+    if !scope.mgOptions.checkOutString
+      scope.mgOptions.checkOutString = 'check out'
+
     scope.weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
     startSelected = false
     # init pension options
@@ -86,7 +92,6 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       scope.dates = []
       arrayMonths = [];
       for monthStart in months
-#        scope.dates.push { text: $filter('date')(monthStart, 'yyyy.MM'), weeks: weeksInMonth monthStart }
         arrayMonths.push {monthText:$filter('date')(monthStart, 'yyyy.MM'), weeks:weeksInMonth(monthStart)}
       drawCalendar(arrayMonths);
 
@@ -229,11 +234,6 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       isVisible: (date, day) ->
         new Date(date.getFullYear(), date.getMonth(), day).getMonth() is date.getMonth()
       isDisabled: (currentDate) ->
-#        if scope.mgStart and scope.mgEnd and scope.mgButtonName is 'checkout'
-#          mindate = new Date scope.mgStart
-#          mindate.setDate mindate.getDate() + 1
-#        else
-#          mindate = scope.restrictions.mindate
         mindate = scope.restrictions.mindate
         if scope.mgOptions.limitNights? and startSelected
           maxdate = new Date scope.mgStart.getFullYear(), scope.mgStart.getMonth(), scope.mgStart.getDate() + scope.mgOptions.limitNights
@@ -242,7 +242,6 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           maxdate = scope.restrictions.maxdate
         (mindate? and currentDate < mindate) or (maxdate? and currentDate > maxdate)
       isToday: (day) ->
-        #day.toDateString() == new Date().toDateString()
         day.toDateString() == Calendar.getToday().toDateString()
       isStart: (day) ->
         scope.mgStart? and scope.mgStart.getTime() is day.getTime()
@@ -264,7 +263,6 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           classString += ' selected'
         else if scope.mgEnd? and scope.mgEnd.getTime() is dayObj.getTime()
           classString += ' selected'
-        #else if scope.mgStart? and scope.mgEnd? and !startSelected and dayObj > scope.mgStart and dayObj < scope.mgEnd
         else if scope.mgStart? and scope.mgEnd? and dayObj > scope.mgStart and dayObj < scope.mgEnd
           classString = 'between-selected'
         else if scope.mgOptions.today?
@@ -352,7 +350,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
                 if scope.mgCallback
                   scope.mgCallback('start')
 
-              else                            # 체크인/체크아웃 모두 있고, 체크인 버튼을 눌러서 들어오고, 체크아웃 이전으로 선택하면 실행
+              else # 체크인/체크아웃 모두 있고, 체크인 버튼을 눌러서 들어오고, 체크아웃 이전으로 선택하면 실행
                 scope.mgStart = date
                 removeCheckInOut()
                 drawCheckInCheckOut()
