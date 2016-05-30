@@ -4,7 +4,8 @@
   "homepage": "https://github.com/kccho/date-picker",
   "authors": [
     "seunglak<seunglak.choi@navercorp.com>",
-    "kccho <kc.cho@navercorp.com>"
+    "kccho <kc.cho@navercorp.com>",
+    "comcode <root.code@navercorp.com>"
   ],
   "description": "Angular directive of Scrollable datepicker.",
   "main": ["release/date-period-picker.js", "release/date-period-picker-templates.js", "release/datepicker-modal.css", "release/mg-datepicker.css"],
