@@ -8,6 +8,7 @@ app.controller 'DatepickerModalController', ['$scope', 'close', 'start', 'end', 
   if callback? then $scope.callback = callback
   $scope.options = options
   $scope.close = ->
+    $scope.callback('close')
     close({start:$scope.start, end:$scope.end})
   if !options.display
     close(null, 200)

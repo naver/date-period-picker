@@ -2133,6 +2133,7 @@
       }
       $scope.options = options;
       $scope.close = function() {
+        $scope.callback('close');
         return close({
           start: $scope.start,
           end: $scope.end
@@ -2249,7 +2250,7 @@
         },
         controller: [
           '$scope', 'ModalService', 'Calendar', '$compile', function(scope, ModalService, Calendar, compile) {
-            var activate, date, drawCalendar, drawEndDate, drawStartDate, getMonthHtml, months, nEnabledTimeLength, ref, ref1, ref2, removeCheckInOut, removeCheckOut, startSelected, weeksInMonth;
+            var activate, date, drawCalendar, drawCheckInCheckOut, drawEndDate, drawStartDate, getMonthHtml, months, nEnabledTimeLength, ref, ref1, ref2, removeCheckInOut, removeCheckOut, startSelected, weeksInMonth;
             scope.weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             startSelected = false;
             if (scope.mgOptions.mgPenTodaysDeal || (scope.mgStart && scope.mgButtonName === 'checkout')) {
@@ -2353,7 +2354,7 @@
                     str += '<td><div class="cell"><div class="num"></div></div></td>';
                   } else {
                     numClass = scope.calendar["class"](dateObj);
-                    str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">';
+                    str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + (numClass === "disabled" ? "\'disabled\'" : "\'\'") + ',' + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">';
                     str += '<div class="cell">';
                     str += '<div class="num">' + dateObj.getDate() + '</div>';
                     if (numClass.indexOf('today') > 0) {
@@ -2372,6 +2373,28 @@
               }
               str += '</tbody></table></div>';
               return str;
+            };
+            drawCheckInCheckOut = function() {
+              var beDate, elTd;
+              if (scope.mgOptions.limitNights !== null) {
+                activate();
+                return;
+              }
+              if (scope.mgStart !== null) {
+                drawStartDate(scope.mgStart, scope.mgStart.getFullYear(), scope.mgStart.getMonth() + 1, scope.mgStart.getDate());
+              }
+              if (scope.mgEnd !== null) {
+                drawEndDate(scope.mgEnd, scope.mgEnd.getFullYear(), scope.mgEnd.getMonth() + 1, scope.mgEnd.getDate());
+              }
+              if (scope.mgStart !== null && scope.mgEnd !== null) {
+                beDate = new Date(scope.mgStart.getFullYear(), scope.mgStart.getMonth(), scope.mgStart.getDate());
+                beDate.setDate(beDate.getDate() + 1);
+                while (beDate < scope.mgEnd) {
+                  elTd = document.getElementById($filter('date')(beDate, 'yyyyMd'));
+                  angular.element(elTd).addClass('between-selected');
+                  beDate.setDate(beDate.getDate() + 1);
+                }
+              }
             };
             drawStartDate = function(date, nYear, nMonth, nDate) {
               var cell, elCustom, elToday, elTodayStr, td, todayId;
@@ -2461,12 +2484,7 @@
               },
               isDisabled: function(currentDate) {
                 var maxdate, mindate;
-                if (scope.mgStart && scope.mgEnd && scope.mgButtonName === 'checkout') {
-                  mindate = new Date(scope.mgStart);
-                  mindate.setDate(mindate.getDate() + 1);
-                } else {
-                  mindate = scope.restrictions.mindate;
-                }
+                mindate = scope.restrictions.mindate;
                 if ((scope.mgOptions.limitNights != null) && startSelected) {
                   maxdate = new Date(scope.mgStart.getFullYear(), scope.mgStart.getMonth(), scope.mgStart.getDate() + scope.mgOptions.limitNights);
                   if (maxdate > scope.restrictions.maxdate) {
@@ -2505,7 +2523,7 @@
                   classString += ' selected';
                 } else if ((scope.mgEnd != null) && scope.mgEnd.getTime() === dayObj.getTime()) {
                   classString += ' selected';
-                } else if ((scope.mgStart != null) && (scope.mgEnd != null) && !startSelected && dayObj > scope.mgStart && dayObj < scope.mgEnd) {
+                } else if ((scope.mgStart != null) && (scope.mgEnd != null) && dayObj > scope.mgStart && dayObj < scope.mgEnd) {
                   classString = 'between-selected';
                 } else if (scope.mgOptions.today != null) {
                   if (dayObj.getTime() === scope.mgOptions.today.setHours(0, 0, 0, 0)) {
@@ -2526,14 +2544,28 @@
                   return scope.endDateText;
                 }
               },
-              select: function(nYear, nMonth, nDate) {
-                var startLimit;
+              select: function(isDisabled, nYear, nMonth, nDate) {
+                var diffDate, startLimit;
                 date = new Date(nYear, nMonth - 1, nDate);
+                if (isDisabled === 'disabled') {
+                  return;
+                }
                 if (scope.mgButtonName === 'checkout' && scope.mgStart && scope.mgEnd) {
+                  if (date <= scope.mgStart) {
+                    scope.mgStart = date;
+                    scope.mgEnd = null;
+                    startSelected = true;
+                    removeCheckInOut();
+                    drawCheckInCheckOut();
+                    if (scope.mgCallback) {
+                      scope.mgCallback('start');
+                    }
+                    return;
+                  }
                   scope.mgEnd = date;
                   startSelected = false;
-                  removeCheckOut();
-                  drawEndDate(date, nYear, nMonth, nDate);
+                  removeCheckInOut();
+                  drawCheckInCheckOut();
                   if (scope.mgCallback) {
                     scope.mgCallback('end');
                   }
@@ -2544,7 +2576,7 @@
                   if (scope.mgOptions.mgPenTodaysDeal) {
                     scope.mgEnd = date;
                     removeCheckOut();
-                    drawEndDate(date, nYear, nMonth, nDate);
+                    drawCheckInCheckOut();
                     if (scope.mgCallback) {
                       scope.mgCallback('end');
                     }
@@ -2556,16 +2588,41 @@
                     startLimit.setDate(startLimit.getDate() - scope.mgOptions.limitNights);
                     if (!startSelected || (startSelected && date <= scope.mgStart)) {
                       if (!scope.mgButtonName || !scope.mgEnd || scope.mgEnd <= date || date < startLimit) {
+                        if (scope.mgButtonName === 'checkin' && scope.mgStart !== null && scope.mgEnd !== null && date < scope.mgEnd) {
+                          diffDate = (scope.mgEnd.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+                          if (scope.mgOptions.limitNights && diffDate > scope.mgOptions.limitNights) {
+                            scope.mgStart = date;
+                            scope.mgEnd = null;
+                            startSelected = true;
+                            removeCheckInOut();
+                            drawCheckInCheckOut();
+                            if (scope.mgCallback) {
+                              return scope.mgCallback('start');
+                            }
+                          }
+                          scope.mgStart = date;
+                          startSelected = true;
+                          removeCheckInOut();
+                          drawCheckInCheckOut();
+                          if (scope.mgCallback) {
+                            scope.mgCallback('start');
+                          }
+                          return $timeout((function() {
+                            return scope.mgSelect();
+                          }), 300);
+                        }
                         scope.mgStart = date;
                         scope.mgEnd = null;
                         startSelected = true;
                         removeCheckInOut();
-                        drawStartDate(date, nYear, nMonth, nDate);
+                        drawCheckInCheckOut();
                         if (scope.mgCallback) {
                           return scope.mgCallback('start');
                         }
                       } else {
                         scope.mgStart = date;
+                        removeCheckInOut();
+                        drawCheckInCheckOut();
                         if (scope.mgCallback) {
                           scope.mgCallback('start');
                         }
@@ -2576,7 +2633,8 @@
                     } else {
                       scope.mgEnd = date;
                       startSelected = false;
-                      drawEndDate(date, nYear, nMonth, nDate);
+                      removeCheckInOut();
+                      drawCheckInCheckOut();
                       if (scope.mgCallback) {
                         scope.mgCallback('end');
                       }
