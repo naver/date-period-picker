@@ -12,8 +12,9 @@
 
   app.service('Calendar', [
     '$http', '$filter', function($http, $filter) {
-      var holidays;
+      var holidays, todayDate;
       holidays = null;
+      todayDate = new Date();
       return {
         load: function(mindate, maxdate, url) {
           if (holidays) {
@@ -2103,7 +2104,11 @@
           return false;
         },
         getToday: function() {
-          return holidays.today;
+          if (holidays.today != null) {
+            return holidays.today;
+          } else {
+            return todayDate;
+          }
         }
       };
     }
@@ -2251,6 +2256,12 @@
         controller: [
           '$scope', 'ModalService', 'Calendar', '$compile', function(scope, ModalService, Calendar, compile) {
             var activate, date, drawCalendar, drawCheckInCheckOut, drawEndDate, drawStartDate, getMonthHtml, months, nEnabledTimeLength, ref, ref1, ref2, removeCheckInOut, removeCheckOut, startSelected, weeksInMonth;
+            if (!scope.mgOptions.checkInString) {
+              scope.mgOptions.checkInString = 'check in';
+            }
+            if (!scope.mgOptions.checkOutString) {
+              scope.mgOptions.checkOutString = 'check out';
+            }
             scope.weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             startSelected = false;
             if (scope.mgOptions.mgPenTodaysDeal || (scope.mgStart && scope.mgButtonName === 'checkout')) {

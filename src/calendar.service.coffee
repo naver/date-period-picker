@@ -4,6 +4,7 @@ app = angular.module 'datePeriodPicker'
 app.service 'Calendar', ['$http', '$filter', ($http, $filter) ->
   # Get holidays
   holidays = null
+  todayDate = new Date()
   
   load: (mindate, maxdate, url) ->
     if holidays then return
@@ -30,5 +31,8 @@ app.service 'Calendar', ['$http', '$filter', ($http, $filter) ->
         return true
     false
   getToday: () ->
-    holidays.today
+    if holidays.today?
+      return holidays.today
+    else
+      return todayDate
 ]
