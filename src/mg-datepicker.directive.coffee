@@ -252,7 +252,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         dayObj = new Date day
         if this.isDisabled dayObj
           classString = 'disabled'
-        else if Calendar.isHoliday dayObj
+        else if scope.mgOptions.enableKoreanCalendar and Calendar.isHoliday dayObj
           classString = 'holiday'
         else
           if dayObj.getDay() is 0

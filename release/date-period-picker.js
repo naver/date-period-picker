@@ -2519,7 +2519,7 @@
                 dayObj = new Date(day);
                 if (this.isDisabled(dayObj)) {
                   classString = 'disabled';
-                } else if (Calendar.isHoliday(dayObj)) {
+                } else if (scope.mgOptions.enableKoreanCalendar && Calendar.isHoliday(dayObj)) {
                   classString = 'holiday';
                 } else {
                   if (dayObj.getDay() === 0) {
