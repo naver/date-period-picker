@@ -2533,8 +2533,6 @@
             };
             drawSelectedFlight = function() {
               var betweenArr, betweenDate, cell, elCalendar, elSdate0, elSdate1, elSdate2, i, options, sameDate, selectedArr, td, today;
-              console.log(scope);
-              console.log('drawSelectedFlight --------------------------------------------------');
               options = scope.mgOptions;
               elCalendar = document.getElementById('custom-modal');
               today = new Date(Calendar.getToday().getTime()).setHours(0, 0, 0, 0);
@@ -2577,14 +2575,12 @@
                 angular.element(cell).append('<div class="txt txtSdate0">당일</div>');
               } else {
                 if (options.sdate0 !== null) {
-                  console.log('여정1 표시 : ' + $filter('date')(options.sdate0, 'yyyyMd'));
                   td = document.getElementById($filter('date')(options.sdate0, 'yyyyMd'));
                   angular.element(td).addClass('selected');
                   cell = td.querySelector('.cell');
                   angular.element(cell).append('<div class="txt txtSdate0">' + scope.mgOptions.sdate0String + '</div>');
                 }
                 if (options.sdate1 !== null) {
-                  console.log('여정2 표시 : ' + $filter('date')(options.sdate1, 'yyyyMd'));
                   td = document.getElementById($filter('date')(options.sdate1, 'yyyyMd'));
                   angular.element(td).addClass('selected');
                   cell = td.querySelector('.cell');
