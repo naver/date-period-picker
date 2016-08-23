@@ -2137,17 +2137,27 @@
       $scope.options = options;
       $scope.close = function() {
         $scope.callback('close');
-        return close({
-          start: $scope.start,
-          end: $scope.end
-        });
+        if (options.project === 'flights') {
+          return close({
+            trip: $scope.options.trip,
+            sdate0: $scope.options.sdate0,
+            sdate1: $scope.options.sdate1,
+            sdate2: $scope.options.sdate2
+          });
+        } else {
+          return close({
+            start: $scope.start,
+            end: $scope.end
+          });
+        }
       };
       if (!options.display) {
         close(null, 200);
       }
       return $scope.$on('$locationChangeStart', function(event, next, current) {
         if (options.display === 1) {
-          return $scope.close();
+          $scope.callback('close');
+          return close();
         }
       });
     }
@@ -2241,11 +2251,29 @@
           return "release/mg-datepicker.html";
         },
         link: function(scope, element, attrs) {
+          var id, monthDate, monthElement;
+          if (scope.mgOptions.project === 'flights') {
+            id = null;
+            monthElement = null;
+            monthDate = null;
+            if (scope.mgOptions.openButton === 'sdate0') {
+              monthDate = scope.mgOptions.sdate0;
+            } else if (scope.mgOptions.openButton === 'sdate1') {
+              monthDate = scope.mgOptions.sdate1;
+            } else if (scope.mgOptions.openButton === 'sdate2') {
+              monthDate = scope.mgOptions.sdate2;
+            }
+            if (monthDate !== null) {
+              id = $filter('date')(monthDate, 'yyyy.MM');
+              monthElement = angular.element(document.getElementById(id));
+              element.parent()[0].scrollTop = monthElement[0].offsetTop;
+            }
+            return;
+          }
           if (scope.mgStart == null) {
             return;
           }
           return $timeout(function() {
-            var id, monthElement;
             id = $filter('date')(scope.mgStart, 'yyyy.MM');
             monthElement = angular.element(document.getElementById(id));
             return element.parent()[0].scrollTop = monthElement[0].offsetTop;
@@ -2253,7 +2281,7 @@
         },
         controller: [
           '$scope', 'ModalService', 'Calendar', '$compile', function(scope, ModalService, Calendar, compile) {
-            var activate, date, drawCalendar, drawCheckInCheckOut, drawEndDate, drawStartDate, getMonthHtml, months, nEnabledTimeLength, ref, ref1, ref2, removeCheckInOut, removeCheckOut, startSelected, weeksInMonth;
+            var activate, date, drawCalendar, drawCheckInCheckOut, drawEndDate, drawSelectedFlight, drawStartDate, getMonthHtml, months, nEnabledTimeLength, ref, ref1, ref2, removeCheckInOut, removeCheckOut, startSelected, weeksInMonth;
             if (!scope.mgOptions.checkInString) {
               scope.mgOptions.checkInString = 'check in';
             }
@@ -2294,14 +2322,14 @@
               date.setMonth(date.getMonth() + 1);
             }
             weeksInMonth = function(month) {
-              var day, each, i, newDay, ref3, week, weeks;
+              var day, each, j, newDay, ref3, week, weeks;
               weeks = [];
               day = new Date(month);
               while (day.getMonth() === month.getMonth()) {
                 newDay = new Date(day);
                 if (!week) {
                   week = [];
-                  for (each = i = 1, ref3 = day.getDay(); i <= ref3; each = i += 1) {
+                  for (each = j = 1, ref3 = day.getDay(); j <= ref3; each = j += 1) {
                     week.push(null);
                   }
                 }
@@ -2317,11 +2345,11 @@
               return weeks;
             };
             activate = function() {
-              var arrayMonths, i, len, monthStart;
+              var arrayMonths, j, len, monthStart;
               scope.dates = [];
               arrayMonths = [];
-              for (i = 0, len = months.length; i < len; i++) {
-                monthStart = months[i];
+              for (j = 0, len = months.length; j < len; j++) {
+                monthStart = months[j];
                 arrayMonths.push({
                   monthText: $filter('date')(monthStart, 'yyyy.MM'),
                   weeks: weeksInMonth(monthStart)
@@ -2330,10 +2358,10 @@
               return drawCalendar(arrayMonths);
             };
             drawCalendar = function(arrayMonths) {
-              var calendarHtml, elCompile, elCon, elCustom, i, len, month, welCon;
+              var calendarHtml, elCompile, elCon, elCustom, j, len, month, welCon;
               calendarHtml = '';
-              for (i = 0, len = arrayMonths.length; i < len; i++) {
-                month = arrayMonths[i];
+              for (j = 0, len = arrayMonths.length; j < len; j++) {
+                month = arrayMonths[j];
                 calendarHtml += getMonthHtml(month);
               }
               elCustom = document.getElementById('custom-modal');
@@ -2344,7 +2372,7 @@
               return welCon.append(elCompile);
             };
             getMonthHtml = function(obj) {
-              var dateArr, dateObj, i, j, len, len1, monthText, numClass, str, week, weeks;
+              var addStr, dateArr, dateObj, j, k, len, len1, monthText, numClass, str, week, weeks;
               weeks = obj.weeks;
               monthText = obj.monthText;
               str = '';
@@ -2353,12 +2381,12 @@
               str += '<table cellspacing="0" cellpadding="0" class="table">';
               str += '<thead class="header"><tr><th>SUN</th><th>MON</th><th>TUE</th><th>WED</th><th>THU</th><th>FRI</th><th>SAT</th></tr></thead>';
               str += '<tbody class="body">';
-              for (i = 0, len = weeks.length; i < len; i++) {
-                week = weeks[i];
+              for (j = 0, len = weeks.length; j < len; j++) {
+                week = weeks[j];
                 dateArr = week;
                 str += '<tr>';
-                for (j = 0, len1 = dateArr.length; j < len1; j++) {
-                  dateObj = dateArr[j];
+                for (k = 0, len1 = dateArr.length; k < len1; k++) {
+                  dateObj = dateArr[k];
                   if (dateObj === null) {
                     str += '<td><div class="cell"><div class="num"></div></div></td>';
                   } else {
@@ -2366,14 +2394,36 @@
                     str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + (numClass === "disabled" ? "\'disabled\'" : "\'\'") + ',' + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">';
                     str += '<div class="cell">';
                     str += '<div class="num">' + dateObj.getDate() + '</div>';
-                    if (numClass.indexOf('today') > 0) {
-                      str += '<div class="txt txtToday">오늘</div>';
-                    }
-                    if (scope.calendar.isStart(dateObj)) {
-                      str += '<div class="txt txtCheckIn">' + scope.mgOptions.checkInString + '</div>';
-                    }
-                    if (scope.calendar.isEnd(dateObj)) {
-                      str += '<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>';
+                    if (scope.mgOptions.project === 'flights') {
+                      addStr = '';
+                      if (scope.mgOptions.trip === 'rt' && scope.calendar.isRoundTripSameDate(dateObj)) {
+                        addStr = '<div class="txt txtSame">당일</div>';
+                      } else {
+                        if (numClass.indexOf('today') > 0) {
+                          addStr = '<div class="txt txtToday">오늘</div>';
+                        } else {
+                          if (scope.calendar.isSdate0(dateObj)) {
+                            addStr += '<div class="txt txtSdate0">' + scope.mgOptions.sdate0String + '</div>';
+                          }
+                          if (scope.calendar.isSdate1(dateObj)) {
+                            addStr += '<div class="txt txtSdate1">' + scope.mgOptions.sdate1String + '</div>';
+                          }
+                          if (scope.calendar.isSdate2(dateObj)) {
+                            addStr += '<div class="txt txtSdate2">' + scope.mgOptions.sdate2String + '</div>';
+                          }
+                        }
+                      }
+                      str += addStr;
+                    } else {
+                      if (numClass.indexOf('today') > 0) {
+                        str += '<div class="txt txtToday">오늘</div>';
+                      }
+                      if (scope.calendar.isStart(dateObj)) {
+                        str += '<div class="txt txtCheckIn">' + scope.mgOptions.checkInString + '</div>';
+                      }
+                      if (scope.calendar.isEnd(dateObj)) {
+                        str += '<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>';
+                      }
                     }
                     str += '</div></td>';
                   }
@@ -2438,7 +2488,7 @@
               return angular.element(cell).append('<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>');
             };
             removeCheckOut = function() {
-              var arrBetween, arrSelect, checkoutSelected, elBetween, elCheckOut, elCustom, i, len, results;
+              var arrBetween, arrSelect, checkoutSelected, elBetween, elCheckOut, elCustom, j, len, results;
               elCustom = document.getElementById('custom-modal');
               elCheckOut = elCustom.querySelector('.txtCheckOut');
               if (typeof elCheckOut !== 'undefined') {
@@ -2451,14 +2501,14 @@
               }
               arrBetween = elCustom.querySelectorAll('.between-selected');
               results = [];
-              for (i = 0, len = arrBetween.length; i < len; i++) {
-                elBetween = arrBetween[i];
+              for (j = 0, len = arrBetween.length; j < len; j++) {
+                elBetween = arrBetween[j];
                 results.push(angular.element(elBetween).removeClass('between-selected'));
               }
               return results;
             };
             removeCheckInOut = function() {
-              var arrBetween, arrSelect, elBetween, elCheckIn, elCheckOut, elCustom, elSelect, i, j, len, len1, results;
+              var arrBetween, arrSelect, elBetween, elCheckIn, elCheckOut, elCustom, elSelect, j, k, len, len1, results;
               elCustom = document.getElementById('custom-modal');
               elCheckIn = elCustom.querySelector('.txtCheckIn');
               if (typeof elCheckIn !== 'undefined') {
@@ -2469,17 +2519,107 @@
                 angular.element(elCheckOut).remove();
               }
               arrSelect = elCustom.querySelectorAll('.selected');
-              for (i = 0, len = arrSelect.length; i < len; i++) {
-                elSelect = arrSelect[i];
+              for (j = 0, len = arrSelect.length; j < len; j++) {
+                elSelect = arrSelect[j];
                 angular.element(elSelect).removeClass('selected');
               }
               arrBetween = elCustom.querySelectorAll('.between-selected');
               results = [];
-              for (j = 0, len1 = arrBetween.length; j < len1; j++) {
-                elBetween = arrBetween[j];
+              for (k = 0, len1 = arrBetween.length; k < len1; k++) {
+                elBetween = arrBetween[k];
                 results.push(angular.element(elBetween).removeClass('between-selected'));
               }
               return results;
+            };
+            drawSelectedFlight = function() {
+              var betweenArr, betweenDate, cell, elCalendar, elSdate0, elSdate1, elSdate2, i, options, sameDate, selectedArr, td, today;
+              options = scope.mgOptions;
+              elCalendar = document.getElementById('custom-modal');
+              today = new Date(Calendar.getToday().getTime()).setHours(0, 0, 0, 0);
+              if (options.sdate0 !== null && options.sdate0.getTime() === today || options.sdate1 !== null && options.sdate1.getTime() === today || options.sdate2 !== null && options.sdate2.getTime() === today) {
+                angular.element(elCalendar.querySelector('.today')).removeClass('today');
+                angular.element(elCalendar.querySelector('.txtToday')).remove();
+              }
+              sameDate = elCalendar.querySelector('.txtSame');
+              if (sameDate !== null) {
+                angular.element(sameDate).remove();
+              }
+              elSdate0 = elCalendar.querySelector('.txtSdate0');
+              if (elSdate0 !== null) {
+                angular.element(elSdate0).remove();
+              }
+              elSdate1 = elCalendar.querySelector('.txtSdate1');
+              if (elSdate1 !== null) {
+                angular.element(elSdate1).remove();
+              }
+              elSdate2 = elCalendar.querySelector('.txtSdate2');
+              if (elSdate2 !== null) {
+                angular.element(elSdate2).remove();
+              }
+              selectedArr = elCalendar.querySelectorAll('.selected');
+              i = 0;
+              while (i < selectedArr.length) {
+                angular.element(selectedArr[i]).removeClass('selected');
+                i++;
+              }
+              betweenArr = elCalendar.querySelectorAll('.between-selected');
+              i = 0;
+              while (i < betweenArr.length) {
+                angular.element(betweenArr[i]).removeClass('between-selected');
+                i++;
+              }
+              if (options.trip === 'rt' && options.sdate0 !== null && options.sdate1 !== null && options.sdate0.getTime() === options.sdate1.getTime()) {
+                td = document.getElementById($filter('date')(options.sdate0, 'yyyyMd'));
+                angular.element(td).addClass('selected');
+                cell = td.querySelector('.cell');
+                angular.element(cell).append('<div class="txt txtSdate0">당일</div>');
+              } else {
+                if (options.sdate0 !== null) {
+                  td = document.getElementById($filter('date')(options.sdate0, 'yyyyMd'));
+                  angular.element(td).addClass('selected');
+                  cell = td.querySelector('.cell');
+                  angular.element(cell).append('<div class="txt txtSdate0">' + scope.mgOptions.sdate0String + '</div>');
+                }
+                if (options.sdate1 !== null) {
+                  td = document.getElementById($filter('date')(options.sdate1, 'yyyyMd'));
+                  angular.element(td).addClass('selected');
+                  cell = td.querySelector('.cell');
+                  angular.element(cell).append('<div class="txt txtSdate1">' + scope.mgOptions.sdate1String + '</div>');
+                }
+                if (options.sdate2 !== null) {
+                  td = document.getElementById($filter('date')(options.sdate2, 'yyyyMd'));
+                  angular.element(td).addClass('selected');
+                  cell = td.querySelector('.cell');
+                  angular.element(cell).append('<div class="txt txtSdate2">' + scope.mgOptions.sdate2String + '</div>');
+                }
+                if (options.sdate0 !== null && options.sdate1 !== null && options.sdate0.getTime() !== options.sdate1.getTime()) {
+                  betweenDate = new Date(options.sdate0.getTime());
+                  betweenDate.setDate(betweenDate.getDate() + 1);
+                  while (betweenDate.getTime() < options.sdate1.getTime()) {
+                    td = document.getElementById($filter('date')(betweenDate, 'yyyyMd'));
+                    angular.element(td).addClass('between-selected');
+                    betweenDate.setDate(betweenDate.getDate() + 1);
+                  }
+                }
+                if (options.sdate1 !== null && options.sdate2 !== null && options.sdate1.getTime() !== options.sdate2.getTime()) {
+                  betweenDate = new Date(options.sdate1.getTime());
+                  betweenDate.setDate(betweenDate.getDate() + 1);
+                  while (betweenDate.getTime() < options.sdate2.getTime()) {
+                    td = document.getElementById($filter('date')(betweenDate, 'yyyyMd'));
+                    angular.element(td).addClass('between-selected');
+                    betweenDate.setDate(betweenDate.getDate() + 1);
+                  }
+                }
+                if (options.sdate0 !== null && options.sdate1 === null && options.sdate2 !== null && options.sdate0.getTime() !== options.sdate2.getTime()) {
+                  betweenDate = new Date(options.sdate0.getTime());
+                  betweenDate.setDate(betweenDate.getDate() + 1);
+                  while (betweenDate.getTime() < options.sdate2.getTime()) {
+                    td = document.getElementById($filter('date')(betweenDate, 'yyyyMd'));
+                    angular.element(td).addClass('between-selected');
+                    betweenDate.setDate(betweenDate.getDate() + 1);
+                  }
+                }
+              }
             };
             if (scope.mgOptions.enableKoreanCalendar) {
               Calendar.load(scope.restrictions.mindate, scope.restrictions.maxdate, scope.mgOptions.holidayUrl);
@@ -2513,8 +2653,22 @@
               isEnd: function(day) {
                 return (scope.mgEnd != null) && scope.mgEnd.getTime() === day.getTime();
               },
+              isSdate0: function(day) {
+                return scope.mgOptions.sdate0 !== null && scope.mgOptions.sdate0.getTime() === day.getTime();
+              },
+              isSdate1: function(day) {
+                return scope.mgOptions.sdate1 !== null && scope.mgOptions.sdate1.getTime() === day.getTime();
+              },
+              isSdate2: function(day) {
+                return scope.mgOptions.sdate2 !== null && scope.mgOptions.sdate2.getTime() === day.getTime();
+              },
+              isRoundTripSameDate: function(day) {
+                if (scope.mgOptions.sdate0 !== null && scope.mgOptions.sdate1 !== null) {
+                  return scope.mgOptions.sdate0.getTime() === day.getTime() && scope.mgOptions.sdate1.getTime() === day.getTime();
+                }
+              },
               "class": function(day) {
-                var classString, dayObj;
+                var classString, dayObj, options;
                 classString = '';
                 dayObj = new Date(day);
                 if (this.isDisabled(dayObj)) {
@@ -2528,18 +2682,35 @@
                     classString = 'saturday';
                   }
                 }
-                if ((scope.mgStart != null) && scope.mgStart.getTime() === dayObj.getTime()) {
-                  classString += ' selected';
-                } else if ((scope.mgEnd != null) && scope.mgEnd.getTime() === dayObj.getTime()) {
-                  classString += ' selected';
-                } else if ((scope.mgStart != null) && (scope.mgEnd != null) && dayObj > scope.mgStart && dayObj < scope.mgEnd) {
-                  classString = 'between-selected';
-                } else if (scope.mgOptions.today != null) {
-                  if (dayObj.getTime() === scope.mgOptions.today.setHours(0, 0, 0, 0)) {
+                if (scope.mgOptions.project === 'flights') {
+                  options = scope.mgOptions;
+                  if (options.sdate0 !== null && options.sdate0.getTime() === dayObj.getTime()) {
+                    classString += ' selected';
+                  } else if (options.sdate1 !== null && options.sdate1.getTime() === dayObj.getTime()) {
+                    classString += ' selected';
+                  } else if (options.sdate2 !== null && options.sdate2.getTime() === dayObj.getTime()) {
+                    classString += ' selected';
+                  } else if (options.sdate0 !== null && options.sdate1 !== null && dayObj > options.sdate0 && dayObj < options.sdate1) {
+                    classString = 'between-selected';
+                  } else if (options.sdate1 !== null && options.sdate2 !== null && dayObj > options.sdate1 && dayObj < options.sdate2) {
+                    classString = 'between-selected';
+                  } else if (dayObj.getTime() === new Date().setHours(0, 0, 0, 0)) {
                     classString += ' today';
                   }
-                } else if (dayObj.getTime() === new Date().setHours(0, 0, 0, 0)) {
-                  classString += ' today';
+                } else {
+                  if ((scope.mgStart != null) && scope.mgStart.getTime() === dayObj.getTime()) {
+                    classString += ' selected';
+                  } else if ((scope.mgEnd != null) && scope.mgEnd.getTime() === dayObj.getTime()) {
+                    classString += ' selected';
+                  } else if ((scope.mgStart != null) && (scope.mgEnd != null) && dayObj > scope.mgStart && dayObj < scope.mgEnd) {
+                    classString = 'between-selected';
+                  } else if (scope.mgOptions.today != null) {
+                    if (dayObj.getTime() === scope.mgOptions.today.setHours(0, 0, 0, 0)) {
+                      classString += ' today';
+                    }
+                  } else if (dayObj.getTime() === new Date().setHours(0, 0, 0, 0)) {
+                    classString += ' today';
+                  }
                 }
                 return classString;
               },
@@ -2554,9 +2725,111 @@
                 }
               },
               select: function(isDisabled, nYear, nMonth, nDate) {
-                var diffDate, startLimit;
+                var diffDate, options, startLimit, today;
                 date = new Date(nYear, nMonth - 1, nDate);
                 if (isDisabled === 'disabled') {
+                  return;
+                }
+                if (typeof scope.mgOptions.project !== 'undefined' && scope.mgOptions.project === 'flights') {
+                  today = new Date(Calendar.getToday().getTime()).setHours(0, 0, 0, 0);
+                  if (scope.mgOptions.isDomestic === 0 && today === date.getTime()) {
+                    return;
+                  }
+                  options = scope.mgOptions;
+                  if (options.trip === 'ow') {
+                    scope.mgCallback({
+                      trip: 'ow',
+                      where: 'sdate0'
+                    });
+                    options.sdate0 = date;
+                    drawSelectedFlight();
+                    $timeout((function() {
+                      return scope.mgSelect();
+                    }), 300);
+                  } else if (options.trip === 'rt') {
+                    scope.mgCallback({
+                      trip: 'rt',
+                      where: options.openButton
+                    });
+                    if (options.openButton === 'sdate0') {
+                      if (options.sdate1 !== null && options.sdate1.getTime() < date.getTime()) {
+                        options.sdate1 = null;
+                        options.sdate0 = date;
+                      } else {
+                        options.sdate0 = date;
+                      }
+                    } else if (scope.mgOptions.openButton === 'sdate1') {
+                      if (options.sdate0 !== null && options.sdate0.getTime() > date.getTime()) {
+                        options.sdate0 = date;
+                        options.sdate1 = null;
+                      } else {
+                        options.sdate1 = date;
+                      }
+                    }
+                    if (options.sdate1 === null) {
+                      options.openButton = 'sdate1';
+                    } else {
+                      options.openButton = 'sdate0';
+                    }
+                    drawSelectedFlight();
+                    if (options.sdate0 !== null && options.sdate1 !== null) {
+                      $timeout((function() {
+                        return scope.mgSelect();
+                      }), 300);
+                    }
+                  } else if (options.trip === 'md') {
+                    scope.mgCallback({
+                      trip: 'md',
+                      where: options.openButton
+                    });
+                    if (options.openButton === 'sdate0') {
+                      options.sdate0 = new Date(date.getTime());
+                      if (options.sdate1 !== null && options.sdate1.getTime() < date.getTime()) {
+                        options.sdate1 = null;
+                      }
+                      if (options.sdate2 !== null && options.sdate2.getTime() < date.getTime()) {
+                        options.sdate1 = null;
+                        options.sdate2 = null;
+                      }
+                    } else if (options.openButton === 'sdate1') {
+                      options.sdate1 = new Date(date.getTime());
+                      if (options.sdate0 !== null && options.sdate0.getTime() > date.getTime()) {
+                        options.sdate1 = null;
+                        options.sdate0 = new Date(date.getTime());
+                      }
+                      if (options.sdate2 !== null && options.sdate2.getTime() < date.getTime()) {
+                        options.sdate2 = null;
+                      }
+                    } else if (options.openButton === 'sdate2') {
+                      options.sdate2 = new Date(date.getTime());
+                      if (options.sdate1 !== null && options.sdate1.getTime() > date.getTime()) {
+                        if (options.sdate0 !== null && options.sdate0.getTime() > date.getTime()) {
+                          options.sdate2 = null;
+                          options.sdate0 = new Date(date.getTime());
+                        } else {
+                          options.sdate2 = null;
+                          options.sdate1 = new Date(date.getTime());
+                        }
+                      }
+                    }
+                    if (options.sdate0 === null) {
+                      options.openButton = 'sdate0';
+                    } else if (options.sdate1 === null) {
+                      options.openButton = 'sdate1';
+                    } else if (options.sdate2 === null && options.isShowWay3 === true) {
+                      options.openButton = 'sdate2';
+                    }
+                    drawSelectedFlight();
+                    if (options.isShowWay3 === true && options.sdate0 !== null && options.sdate1 !== null && options.sdate2 !== null) {
+                      $timeout((function() {
+                        return scope.mgSelect();
+                      }), 300);
+                    } else if (options.isShowWay3 === false && options.sdate0 !== null && options.sdate1 !== null) {
+                      $timeout((function() {
+                        return scope.mgSelect();
+                      }), 300);
+                    }
+                  }
                   return;
                 }
                 if (scope.mgButtonName === 'checkout' && scope.mgStart && scope.mgEnd) {

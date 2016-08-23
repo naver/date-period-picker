@@ -17,6 +17,21 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
     return "release/mg-datepicker.html"
 
   link: (scope, element, attrs) ->
+    if scope.mgOptions.project == 'flights'
+      id = null
+      monthElement = null
+      monthDate = null
+      if scope.mgOptions.openButton == 'sdate0'
+        monthDate = scope.mgOptions.sdate0
+      else if scope.mgOptions.openButton == 'sdate1'
+        monthDate = scope.mgOptions.sdate1
+      else if scope.mgOptions.openButton == 'sdate2'
+        monthDate = scope.mgOptions.sdate2
+      if monthDate != null
+        id = $filter('date')(monthDate, 'yyyy.MM')
+        monthElement = angular.element(document.getElementById(id))
+        element.parent()[0].scrollTop = monthElement[0].offsetTop
+      return
     if !scope.mgStart? then return
     $timeout () ->  # Scrolling to selected dates
       id = $filter('date')(scope.mgStart, 'yyyy.MM')
@@ -126,15 +141,31 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
             str += '<td id="' + $filter('date')(dateObj, 'yyyyMd') + '" ng-click="calendar.select(' + (if (numClass=="disabled") then "\'disabled\'" else "\'\'") + ','  + $filter('date')(dateObj, 'yyyy,M,d') + ')" class="' + numClass + '">'
             str += '<div class="cell">'
             str += '<div class="num">' + dateObj.getDate() + '</div>'
-            # 오늘
-            if numClass.indexOf('today') > 0
-              str += '<div class="txt txtToday">오늘</div>'
-            # 체크인
-            if scope.calendar.isStart(dateObj)
-              str += '<div class="txt txtCheckIn">' + scope.mgOptions.checkInString + '</div>'
-            # 체크아웃
-            if scope.calendar.isEnd(dateObj)
-              str += '<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>'
+            if scope.mgOptions.project == 'flights'             # flights
+              addStr = ''
+              if scope.mgOptions.trip == 'rt' && scope.calendar.isRoundTripSameDate(dateObj)    # 왕복일때 가는날,오는날 같다
+                addStr = '<div class="txt txtSame">당일</div>'
+              else
+                if numClass.indexOf('today') > 0
+                  addStr = '<div class="txt txtToday">오늘</div>'
+                else
+                  if scope.calendar.isSdate0(dateObj)
+                    addStr += '<div class="txt txtSdate0">' + scope.mgOptions.sdate0String + '</div>'
+                  if scope.calendar.isSdate1(dateObj)
+                    addStr += '<div class="txt txtSdate1">' + scope.mgOptions.sdate1String + '</div>'
+                  if scope.calendar.isSdate2(dateObj)
+                    addStr += '<div class="txt txtSdate2">' + scope.mgOptions.sdate2String + '</div>'
+              str += addStr
+            else
+              # 오늘
+              if numClass.indexOf('today') > 0
+                str += '<div class="txt txtToday">오늘</div>'
+              # 체크인
+              if scope.calendar.isStart(dateObj)
+                str += '<div class="txt txtCheckIn">' + scope.mgOptions.checkInString + '</div>'
+              # 체크아웃
+              if scope.calendar.isEnd(dateObj)
+                str += '<div class="txt txtCheckOut">' + scope.mgOptions.checkOutString + '</div>'
             str += '</div></td>'
         str += '</tr>';
       str += '</tbody></table></div>';
@@ -223,6 +254,92 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       for elBetween in arrBetween
         angular.element(elBetween).removeClass 'between-selected'
 
+    # flights
+    drawSelectedFlight = () ->
+      options = scope.mgOptions
+      elCalendar = document.getElementById('custom-modal')
+      today = new Date(Calendar.getToday().getTime()).setHours(0, 0, 0, 0)    # today
+      # 1471446000...
+      if options.sdate0 != null and options.sdate0.getTime() == today or options.sdate1 != null and options.sdate1.getTime() == today or options.sdate2 != null and options.sdate2.getTime() == today
+        angular.element(elCalendar.querySelector('.today')).removeClass 'today'
+        angular.element(elCalendar.querySelector('.txtToday')).remove()
+      # 당일 삭제
+      sameDate = elCalendar.querySelector('.txtSame')
+      if sameDate != null
+        angular.element(sameDate).remove()
+      # 가는날, 오는날, 여정1, 여정2, 여정3 삭제
+      elSdate0 = elCalendar.querySelector('.txtSdate0')
+      if elSdate0 != null
+        angular.element(elSdate0).remove()
+      elSdate1 = elCalendar.querySelector('.txtSdate1')
+      if elSdate1 != null
+        angular.element(elSdate1).remove()
+      elSdate2 = elCalendar.querySelector('.txtSdate2')
+      if elSdate2 != null
+        angular.element(elSdate2).remove()
+      # selected 삭제
+      selectedArr = elCalendar.querySelectorAll('.selected')
+      i = 0
+      while i < selectedArr.length
+        angular.element(selectedArr[i]).removeClass 'selected'
+        i++
+      # between-selected 삭제
+      betweenArr = elCalendar.querySelectorAll('.between-selected')
+      i = 0
+      while i < betweenArr.length
+        angular.element(betweenArr[i]).removeClass 'between-selected'
+        i++
+      # 당일 표시(왕복 && 가는날, 오는날이 같을때)
+      if options.trip == 'rt' and options.sdate0 != null and options.sdate1 != null and options.sdate0.getTime() == options.sdate1.getTime()
+        td = document.getElementById($filter('date')(options.sdate0, 'yyyyMd'))
+        angular.element(td).addClass 'selected'
+        cell = td.querySelector('.cell')
+        angular.element(cell).append '<div class="txt txtSdate0">당일</div>'
+      # 당일 아닐때
+      else
+        # 여정1 표시
+        if options.sdate0 != null
+          td = document.getElementById($filter('date')(options.sdate0, 'yyyyMd'))
+          angular.element(td).addClass 'selected'
+          cell = td.querySelector('.cell')
+          angular.element(cell).append '<div class="txt txtSdate0">' + scope.mgOptions.sdate0String + '</div>'
+        # 여정2 표시
+        if options.sdate1 != null
+          td = document.getElementById($filter('date')(options.sdate1, 'yyyyMd'))
+          angular.element(td).addClass 'selected'
+          cell = td.querySelector('.cell')
+          angular.element(cell).append '<div class="txt txtSdate1">' + scope.mgOptions.sdate1String + '</div>'
+        # 여정3 표시
+        if options.sdate2 != null
+          td = document.getElementById($filter('date')(options.sdate2, 'yyyyMd'))
+          angular.element(td).addClass 'selected'
+          cell = td.querySelector('.cell')
+          angular.element(cell).append '<div class="txt txtSdate2">' + scope.mgOptions.sdate2String + '</div>'
+        # between-selected 표시 (sdate0 ~ sdate1)
+        if options.sdate0 != null and options.sdate1 != null and options.sdate0.getTime() != options.sdate1.getTime()
+          betweenDate = new Date(options.sdate0.getTime())
+          betweenDate.setDate betweenDate.getDate() + 1
+          while betweenDate.getTime() < options.sdate1.getTime()
+            td = document.getElementById($filter('date')(betweenDate, 'yyyyMd'))
+            angular.element(td).addClass 'between-selected'
+            betweenDate.setDate betweenDate.getDate() + 1
+        # between-selected 표시 (sdate1 ~ sdate2)
+        if options.sdate1 != null and options.sdate2 != null and options.sdate1.getTime() != options.sdate2.getTime()
+          betweenDate = new Date(options.sdate1.getTime())
+          betweenDate.setDate betweenDate.getDate() + 1
+          while betweenDate.getTime() < options.sdate2.getTime()
+            td = document.getElementById($filter('date')(betweenDate, 'yyyyMd'))
+            angular.element(td).addClass 'between-selected'
+            betweenDate.setDate betweenDate.getDate() + 1
+        # between-selected 표시 (sdate0 ~ sdate2)
+        if options.sdate0 != null and options.sdate1 == null and options.sdate2 != null and options.sdate0.getTime() != options.sdate2.getTime()
+          betweenDate = new Date(options.sdate0.getTime())
+          betweenDate.setDate betweenDate.getDate() + 1
+          while betweenDate.getTime() < options.sdate2.getTime()
+            td = document.getElementById($filter('date')(betweenDate, 'yyyyMd'))
+            angular.element(td).addClass 'between-selected'
+            betweenDate.setDate betweenDate.getDate() + 1
+      return
 
     # 공휴일 로드
     if scope.mgOptions.enableKoreanCalendar
@@ -247,6 +364,15 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
         scope.mgStart? and scope.mgStart.getTime() is day.getTime()
       isEnd: (day) ->
         scope.mgEnd? and scope.mgEnd.getTime() is day.getTime()
+      isSdate0: (day) ->              # flights
+        scope.mgOptions.sdate0 != null && scope.mgOptions.sdate0.getTime() == day.getTime()
+      isSdate1: (day) ->              # flights
+        scope.mgOptions.sdate1 != null && scope.mgOptions.sdate1.getTime() == day.getTime()
+      isSdate2: (day) ->              # flights
+        scope.mgOptions.sdate2 != null && scope.mgOptions.sdate2.getTime() == day.getTime()
+      isRoundTripSameDate: (day) ->   # flights
+        if scope.mgOptions.sdate0 != null && scope.mgOptions.sdate1 != null
+          return scope.mgOptions.sdate0.getTime() == day.getTime() && scope.mgOptions.sdate1.getTime() == day.getTime()
       class: (day) ->
         classString = ''
         dayObj = new Date day
@@ -259,17 +385,33 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
             classString = 'sunday'
           else if dayObj.getDay() is 6
             classString = 'saturday'
-        if scope.mgStart? and scope.mgStart.getTime() is dayObj.getTime()
-          classString += ' selected'
-        else if scope.mgEnd? and scope.mgEnd.getTime() is dayObj.getTime()
-          classString += ' selected'
-        else if scope.mgStart? and scope.mgEnd? and dayObj > scope.mgStart and dayObj < scope.mgEnd
-          classString = 'between-selected'
-        else if scope.mgOptions.today?
-          if dayObj.getTime() is scope.mgOptions.today.setHours(0, 0, 0, 0)
+        # flights
+        if scope.mgOptions.project == 'flights'
+          options = scope.mgOptions
+          if options.sdate0 != null && options.sdate0.getTime() == dayObj.getTime()
+            classString += ' selected'
+          else if options.sdate1 != null && options.sdate1.getTime() == dayObj.getTime()
+            classString += ' selected'
+          else if options.sdate2 != null && options.sdate2.getTime() == dayObj.getTime()
+            classString += ' selected'
+          else if options.sdate0 != null && options.sdate1 != null && dayObj > options.sdate0 && dayObj < options.sdate1    # sdate0 ~ sdate1
+            classString = 'between-selected'
+          else if options.sdate1 != null && options.sdate2 != null && dayObj > options.sdate1 && dayObj < options.sdate2    # sdate1 ~ sdate2
+            classString = 'between-selected'
+          else if dayObj.getTime() == new Date().setHours(0, 0, 0, 0)
             classString += ' today'
-        else if dayObj.getTime() is new Date().setHours(0, 0, 0, 0)
-          classString += ' today'
+        else
+          if scope.mgStart? and scope.mgStart.getTime() is dayObj.getTime()
+            classString += ' selected'
+          else if scope.mgEnd? and scope.mgEnd.getTime() is dayObj.getTime()
+            classString += ' selected'
+          else if scope.mgStart? and scope.mgEnd? and dayObj > scope.mgStart and dayObj < scope.mgEnd
+            classString = 'between-selected'
+          else if scope.mgOptions.today?
+            if dayObj.getTime() is scope.mgOptions.today.setHours(0, 0, 0, 0)
+              classString += ' today'
+          else if dayObj.getTime() is new Date().setHours(0, 0, 0, 0)
+            classString += ' today'
         classString
       startDayText: ->
         if scope.mgOptions.startDateText
@@ -281,6 +423,99 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
       select: (isDisabled, nYear, nMonth, nDate) ->
         date = new Date nYear, nMonth-1, nDate
         if isDisabled == 'disabled'         # 비활성이면 return
+          return
+
+        # flights
+        if typeof scope.mgOptions.project != 'undefined' && scope.mgOptions.project == 'flights'
+          today = new Date(Calendar.getToday().getTime()).setHours(0, 0, 0, 0)  # 1471446000...
+          if scope.mgOptions.isDomestic == 0 && today == date.getTime()         # 해외이고 오늘 날짜 선택이면 return
+            return
+
+          options = scope.mgOptions
+          # 편도
+          if options.trip == 'ow'
+            scope.mgCallback
+              trip: 'ow'
+              where: 'sdate0'
+            options.sdate0 = date
+            drawSelectedFlight()
+            $timeout (->
+              scope.mgSelect()
+            ), 300
+          # 왕복
+          else if options.trip == 'rt'
+            scope.mgCallback
+              trip: 'rt'
+              where: options.openButton
+            if options.openButton == 'sdate0'
+              if options.sdate1 != null and options.sdate1.getTime() < date.getTime()
+                options.sdate1 = null
+                options.sdate0 = date
+              else
+                options.sdate0 = date
+            else if scope.mgOptions.openButton == 'sdate1'
+              if options.sdate0 != null and options.sdate0.getTime() > date.getTime()
+                options.sdate0 = date
+                options.sdate1 = null
+              else
+                options.sdate1 = date
+
+            if options.sdate1 == null
+              options.openButton = 'sdate1'
+            else
+              options.openButton = 'sdate0'
+            drawSelectedFlight()
+            # 모두 선택했으면 나간다
+            if options.sdate0 != null and options.sdate1 != null
+              $timeout (->
+                scope.mgSelect()
+              ), 300
+          # 다구간
+          else if options.trip == 'md'
+            scope.mgCallback
+              trip: 'md'
+              where: options.openButton
+            if options.openButton == 'sdate0'
+              options.sdate0 = new Date(date.getTime())
+              if options.sdate1 != null and options.sdate1.getTime() < date.getTime()     # sdate1 <
+                options.sdate1 = null
+              if options.sdate2 != null and options.sdate2.getTime() < date.getTime()     # sdate2 <
+                options.sdate1 = null
+                options.sdate2 = null
+            else if options.openButton == 'sdate1'
+              options.sdate1 = new Date(date.getTime())
+              if options.sdate0 != null and options.sdate0.getTime() > date.getTime()     # sdate0 >
+                options.sdate1 = null
+                options.sdate0 = new Date(date.getTime())
+              if options.sdate2 != null and options.sdate2.getTime() < date.getTime()     # sdate2 <
+                options.sdate2 = null
+            else if options.openButton == 'sdate2'
+              options.sdate2 = new Date(date.getTime())
+              if options.sdate1 != null and options.sdate1.getTime() > date.getTime()     # sdate1 >
+                if options.sdate0 != null and options.sdate0.getTime() > date.getTime()   # sdate0 >
+                  options.sdate2 = null
+                  options.sdate0 = new Date(date.getTime())
+                else
+                  options.sdate2 = null
+                  options.sdate1 = new Date(date.getTime())
+
+            if options.sdate0 == null
+              options.openButton = 'sdate0'
+            else if options.sdate1 == null
+              options.openButton = 'sdate1'
+            else if options.sdate2 == null && options.isShowWay3 == true
+              options.openButton = 'sdate2'
+
+            drawSelectedFlight()
+            # 모두 선택했으면 나간다
+            if options.isShowWay3 == true and options.sdate0 != null and options.sdate1 != null and options.sdate2 != null
+              $timeout (->
+                scope.mgSelect()
+              ), 300
+            else if options.isShowWay3 == false and options.sdate0 != null and options.sdate1 != null
+              $timeout (->
+                scope.mgSelect()
+              ), 300
           return
 
         # distinguish between tapping a start button and an end button

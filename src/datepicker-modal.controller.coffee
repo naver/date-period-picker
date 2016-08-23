@@ -9,10 +9,19 @@ app.controller 'DatepickerModalController', ['$scope', 'close', 'start', 'end', 
   $scope.options = options
   $scope.close = ->
     $scope.callback('close')
-    close({start:$scope.start, end:$scope.end})
+    if options.project == 'flights'   # flights
+      close({
+        trip: $scope.options.trip,
+        sdate0: $scope.options.sdate0,
+        sdate1: $scope.options.sdate1,
+        sdate2: $scope.options.sdate2
+      })
+    else
+      close({start:$scope.start, end:$scope.end})
   if !options.display
     close(null, 200)
   $scope.$on '$locationChangeStart', (event, next, current) ->
     if options.display == 1
-      $scope.close()
+      $scope.callback('close')
+      close()
 ]
