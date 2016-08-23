@@ -516,7 +516,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
               $timeout (->
                 scope.mgSelect()
               ), 300
-          return    # flights
+          return    # flights end
 
         # distinguish between tapping a start button and an end button
         if scope.mgButtonName is 'checkout' and scope.mgStart and scope.mgEnd
