@@ -494,6 +494,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
               if options.sdate1 != null and options.sdate1.getTime() > date.getTime()     # sdate1 >
                 if options.sdate0 != null and options.sdate0.getTime() > date.getTime()   # sdate0 >
                   options.sdate2 = null
+                  options.sdate1 = null
                   options.sdate0 = new Date(date.getTime())
                 else
                   options.sdate2 = null
