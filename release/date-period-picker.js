@@ -2805,6 +2805,7 @@
                       if (options.sdate1 !== null && options.sdate1.getTime() > date.getTime()) {
                         if (options.sdate0 !== null && options.sdate0.getTime() > date.getTime()) {
                           options.sdate2 = null;
+                          options.sdate1 = null;
                           options.sdate0 = new Date(date.getTime());
                         } else {
                           options.sdate2 = null;
