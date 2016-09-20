@@ -146,7 +146,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
               if scope.mgOptions.trip == 'rt' && scope.calendar.isRoundTripSameDate(dateObj)    # 왕복일때 가는날,오는날 같다
                 addStr = '<div class="txt txtSame">당일</div>'
               else
-                if numClass.indexOf('today') > 0
+                if numClass.indexOf('today') != -1
                   addStr = '<div class="txt txtToday">오늘</div>'
                 else
                   if scope.calendar.isSdate0(dateObj)
@@ -158,7 +158,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
               str += addStr
             else
               # 오늘
-              if numClass.indexOf('today') > 0
+              if numClass.indexOf('today') != -1
                 str += '<div class="txt txtToday">오늘</div>'
               # 체크인
               if scope.calendar.isStart(dateObj)
@@ -399,7 +399,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
           else if options.sdate1 != null && options.sdate2 != null && dayObj > options.sdate1 && dayObj < options.sdate2    # sdate1 ~ sdate2
             classString = 'between-selected'
           else if dayObj.getTime() == new Date().setHours(0, 0, 0, 0)
-            classString += ' today'
+            classString = 'today'
         else
           if scope.mgStart? and scope.mgStart.getTime() is dayObj.getTime()
             classString += ' selected'
@@ -409,9 +409,9 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
             classString = 'between-selected'
           else if scope.mgOptions.today?
             if dayObj.getTime() is scope.mgOptions.today.setHours(0, 0, 0, 0)
-              classString += ' today'
+              classString = 'today'
           else if dayObj.getTime() is new Date().setHours(0, 0, 0, 0)
-            classString += ' today'
+            classString = 'today'
         classString
       startDayText: ->
         if scope.mgOptions.startDateText
