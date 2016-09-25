@@ -2399,7 +2399,7 @@
                       if (scope.mgOptions.trip === 'rt' && scope.calendar.isRoundTripSameDate(dateObj)) {
                         addStr = '<div class="txt txtSame">당일</div>';
                       } else {
-                        if (numClass.indexOf('today') > 0) {
+                        if (numClass.indexOf('today') !== -1) {
                           addStr = '<div class="txt txtToday">오늘</div>';
                         } else {
                           if (scope.calendar.isSdate0(dateObj)) {
@@ -2415,7 +2415,7 @@
                       }
                       str += addStr;
                     } else {
-                      if (numClass.indexOf('today') > 0) {
+                      if (numClass.indexOf('today') !== -1) {
                         str += '<div class="txt txtToday">오늘</div>';
                       }
                       if (scope.calendar.isStart(dateObj)) {
@@ -2695,7 +2695,7 @@
                   } else if (options.sdate1 !== null && options.sdate2 !== null && dayObj > options.sdate1 && dayObj < options.sdate2) {
                     classString = 'between-selected';
                   } else if (dayObj.getTime() === new Date().setHours(0, 0, 0, 0)) {
-                    classString += ' today';
+                    classString = 'today';
                   }
                 } else {
                   if ((scope.mgStart != null) && scope.mgStart.getTime() === dayObj.getTime()) {
@@ -2706,10 +2706,10 @@
                     classString = 'between-selected';
                   } else if (scope.mgOptions.today != null) {
                     if (dayObj.getTime() === scope.mgOptions.today.setHours(0, 0, 0, 0)) {
-                      classString += ' today';
+                      classString = 'today';
                     }
                   } else if (dayObj.getTime() === new Date().setHours(0, 0, 0, 0)) {
-                    classString += ' today';
+                    classString = 'today';
                   }
                 }
                 return classString;
