@@ -2867,6 +2867,7 @@
                       return scope.mgSelect();
                     }), 300);
                   } else {
+                    scope.mgEnd = null;
                     startLimit = new Date(scope.mgEnd);
                     startLimit.setDate(startLimit.getDate() - scope.mgOptions.limitNights);
                     if (!startSelected || (startSelected && date <= scope.mgStart)) {
