@@ -553,6 +553,7 @@ app.directive 'mgDatepicker', ['$timeout', '$filter', ($timeout, $filter) ->
               scope.mgSelect()
             ), 300
           else # general case
+            scope.mgEnd = null            # 호텔 달력 UX 변경. 체크인 선택후 체크아웃은 null로.
             startLimit = new Date scope.mgEnd
             startLimit.setDate startLimit.getDate() - scope.mgOptions.limitNights
             if !startSelected or (startSelected and date <= scope.mgStart)
