@@ -1,12 +1,10 @@
 #overlay {
   position: fixed;
-  left: 2%;
-  right: 2%;
-  top: 10%;
-  padding: 1px;
+  left: 5px;
+  right: 5px;
+  top: 53px;
+  bottom: 5px;
   background-color: #ffffff;
-  width: 96%;
-  height: 80%;
   z-index: 100;
   overflow: auto; }
 
@@ -19,5 +17,19 @@
   width: 100%;
   height: 100%;
   z-index: 90; }
+
+#fade .btn_calendar_close {
+  display: block;
+  position: fixed;
+  right: 10px;
+  top: 25px;
+  z-index: 3001;
+  width: 20px;
+  height: 20px;
+  background-image: url("/hotels/assets/images/sp_hotel_v1.png");
+  background-repeat: no-repeat;
+  -webkit-background-size: 235px 222px;
+  background-size: 235px 222px;
+  background-position: -71px -171px; }
 
 /*# sourceMappingURL=datepicker-modal.css.map */
